@@ -1,0 +1,6 @@
+region             = "us-gov-west-1"
+vpc_id             = "vpc-0123456789abcdef4"
+vpc_cidr           = "10.104.0.0/16"
+private_subnet_ids = ["subnet-0bbbbbbbbbbbbbbbb", "subnet-0cccccccccccccccc"]
+route_table_ids    = ["rtb-0123456789abcdef4"]
+kubernetes_version = "1.29"
