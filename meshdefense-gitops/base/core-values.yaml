@@ -37,5 +37,9 @@ data:
     fluentbit:
       enabled: true
 
+    addons:
+      argocd:
+        enabled: false
+
     networkPolicies:
       enabled: true

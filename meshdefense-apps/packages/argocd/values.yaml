@@ -1,0 +1,57 @@
+# ==============================================================================
+# ArgoCD Helm Values for Air-Gapped Big Bang
+# ==============================================================================
+
+global:
+  domain: "argocd.il6.meshdefense.internal"
+  image:
+    repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd"
+    tag: "v2.10.1"
+    imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: "harbor-registry-secret"
+
+# ArgoCD API & Web Server
+server:
+  replicas: 2
+  insecure: false
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false # Managed via Istio VirtualService in Big Bang
+
+# Repo Server
+repoServer:
+  replicas: 2
+  image:
+    repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd-repo-server"
+    tag: "v2.10.1"
+
+# Application Controller
+controller:
+  replicas: 1
+  args:
+    statusProcessors: 20
+    operationProcessors: 10
+
+# Redis Cache (Hardened Iron Bank Image)
+redis:
+  image:
+    repository: "registry.il6.meshdefense.internal/ironbank/opensource/redis/redis6"
+    tag: "6.2.14"
+
+# DoD SSO / Keycloak OIDC Authentication Configuration
+configs:
+  cm:
+    url: "https://argocd.il6.meshdefense.internal"
+    oidc.config: |
+      name: Keycloak
+      issuer: https://keycloak.il6.meshdefense.internal/auth/realms/meshdefense
+      clientID: argocd
+      clientSecret: $argocd-secret:oidc.keycloak.clientSecret
+      requestedScopes: ["openid", "profile", "email", "groups"]
+  rbac:
+    policy.default: role:readonly
+    policy.csv: |
+      g, /meshdefense-admins, role:admin
+      g, /meshdefense-developers, role:readonly
