@@ -1,0 +1,38 @@
+apiVersion: v2
+name: bigbang
+description: Platform One Big Bang Helm umbrella chart mirrored and packaged for air-gapped DoD IL6 enclaves.
+type: application
+version: 2.46.0
+appVersion: "2.46.0"
+maintainers:
+  - name: MeshDefense Platform Engineering
+    email: devsecops@meshdefense.internal
+keywords:
+  - platform-one
+  - bigbang
+  - devsecops
+  - airgap
+  - il6
+  - istio
+  - ironbank
+dependencies:
+  - name: istio
+    version: "1.20.2"
+    repository: "file://charts/istio"
+    condition: istio.enabled
+  - name: gatekeeper
+    version: "3.14.0"
+    repository: "file://charts/gatekeeper"
+    condition: gatekeeper.enabled
+  - name: monitoring
+    version: "55.0.0"
+    repository: "file://charts/monitoring"
+    condition: monitoring.enabled
+  - name: neuvector
+    version: "2.7.2"
+    repository: "file://charts/neuvector"
+    condition: neuvector.enabled
+  - name: fluentbit
+    version: "0.40.0"
+    repository: "file://charts/fluentbit"
+    condition: fluentbit.enabled

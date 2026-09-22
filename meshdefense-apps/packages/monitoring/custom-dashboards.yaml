@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meshdefense-stig-compliance-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  stig-compliance.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "title": "MeshDefense - DoD STIG & Big Bang Compliance Overview",
+      "panels": [
+        {
+          "title": "Istio mTLS Strict Coverage",
+          "type": "stat",
+          "targets": [
+            { "expr": "sum(istio_requests_total{connection_security_policy=\"mutual_tls\"}) / sum(istio_requests_total) * 100" }
+          ]
+        },
+        {
+          "title": "Zero-Trust Egress Violations",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "sum(rate(istio_requests_total{response_code=\"502\",destination_service=\"BlackHoleCluster\"}[5m]))" }
+          ]
+        }
+      ]
+    }

@@ -1,0 +1,9 @@
+# MeshDefense Application Specific Images
+registry1.dso.mil/ironbank/gitlab/gitlab-ee:v16.8.1-ee
+registry1.dso.mil/ironbank/gitlab/gitlab-runner:v16.8.0
+registry1.dso.mil/ironbank/sonarsource/sonarqube:10.3.0-community
+registry1.dso.mil/ironbank/opensource/postgres/postgresql:15.5
+registry1.dso.mil/ironbank/redhat/keycloak/keycloak:23.0.4
+registry1.dso.mil/ironbank/hashicorp/vault/vault:1.15.5
+registry1.dso.mil/ironbank/anchore/grype:v0.74.0
+registry1.dso.mil/ironbank/redhat/ubi/ubi9:latest

@@ -1,0 +1,28 @@
+# ==============================================================================
+# NeuVector Zero-Trust Container Defense Values for Big Bang
+# ==============================================================================
+
+registry: "registry.il6.meshdefense.internal"
+
+imagePullSecrets:
+  - name: "harbor-registry-secret"
+
+manager:
+  image:
+    repository: "ironbank/neuvector/manager"
+    tag: "5.3.0"
+
+controller:
+  image:
+    repository: "ironbank/neuvector/controller"
+    tag: "5.3.0"
+  replicas: 3
+
+enforcer:
+  image:
+    repository: "ironbank/neuvector/enforcer"
+    tag: "5.3.0"
+
+cve:
+  updater:
+    enabled: false # Disabled in airgap; updated via update-vuln-db.sh script

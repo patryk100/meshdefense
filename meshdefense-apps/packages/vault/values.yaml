@@ -1,0 +1,25 @@
+# ==============================================================================
+# HashiCorp Vault Helm Values for Air-Gapped Big Bang
+# ==============================================================================
+
+server:
+  image:
+    repository: "registry.il6.meshdefense.internal/ironbank/hashicorp/vault/vault"
+    tag: "1.15.5"
+    pullSecrets:
+      - name: "harbor-registry-secret"
+
+  ha:
+    enabled: true
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+
+  # KMS Auto-unseal integration for IL6 cloud
+  extraEnvironmentVars:
+    VAULT_SEAL_TYPE: "awskms"
+
+ui:
+  enabled: true
+  serviceType: "ClusterIP"

@@ -1,0 +1,96 @@
+# ==============================================================================
+# Platform One Big Bang Baseline Values for Air-Gapped IL6 Enclaves
+# ==============================================================================
+
+domain: "il6.meshdefense.internal"
+
+# Global Airgap Registry Overrides
+# In airgap, all Iron Bank (registry1.dso.mil) images are mirrored to Harbor
+registryCredentials:
+  - registry: "registry.il6.meshdefense.internal"
+    username: "airgap-robot"
+    password: "" # Populated via SOPS / Secret overlay
+    email: "devsecops@meshdefense.internal"
+
+# Iron Bank mirror target
+imagePullSecrets:
+  - name: "harbor-registry-secret"
+
+# ------------------------------------------------------------------------------
+# Core Platform Packages
+# ------------------------------------------------------------------------------
+istio:
+  enabled: true
+  values:
+    global:
+      hub: "registry.il6.meshdefense.internal/ironbank/istio"
+      tag: "1.20.2"
+    meshConfig:
+      enableAutoMtls: true
+      defaultConfig:
+        holdApplicationUntilProxyStarts: true
+      outboundTrafficPolicy:
+        mode: REGISTRY_ONLY # Enforces strict zero-trust outbound network egress
+
+gatekeeper:
+  enabled: true
+  values:
+    image:
+      repository: "registry.il6.meshdefense.internal/ironbank/open-policy-agent/gatekeeper"
+      tag: "v3.14.0"
+
+monitoring:
+  enabled: true
+  values:
+    prometheus:
+      prometheusSpec:
+        image:
+          repository: "registry.il6.meshdefense.internal/ironbank/opensource/prometheus/prometheus"
+          tag: "v2.49.0"
+        retention: "30d"
+    grafana:
+      image:
+        repository: "registry.il6.meshdefense.internal/ironbank/big-bang/grafana"
+        tag: "10.2.3"
+
+neuvector:
+  enabled: true
+  values:
+    manager:
+      image:
+        repository: "registry.il6.meshdefense.internal/ironbank/neuvector/manager"
+        tag: "5.3.0"
+    controller:
+      image:
+        repository: "registry.il6.meshdefense.internal/ironbank/neuvector/controller"
+        tag: "5.3.0"
+    enforcer:
+      image:
+        repository: "registry.il6.meshdefense.internal/ironbank/neuvector/enforcer"
+        tag: "5.3.0"
+
+fluentbit:
+  enabled: true
+  values:
+    image:
+      repository: "registry.il6.meshdefense.internal/ironbank/fluent/fluent-bit"
+      tag: "2.2.2"
+
+# ------------------------------------------------------------------------------
+# Add-on Packages (Disabled in base, enabled in overlays as needed)
+# ------------------------------------------------------------------------------
+addons:
+  gitlab:
+    enabled: false
+  sonarqube:
+    enabled: false
+  keycloak:
+    enabled: false
+  vault:
+    enabled: false
+
+# Enforce network policies across all Big Bang namespaces
+networkPolicies:
+  enabled: true
+  controlPlane:
+    enabled: true

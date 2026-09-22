@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bigbang.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "bigbang.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    meshdefense.io/role: "platform-config"
+data:
+  domain: {{ .Values.domain | quote }}
+  airgap: "true"
+  mtls_mode: {{ .Values.istio.values.meshConfig.outboundTrafficPolicy.mode | quote }}
+  network_policies_enforced: {{ .Values.networkPolicies.enabled | quote }}

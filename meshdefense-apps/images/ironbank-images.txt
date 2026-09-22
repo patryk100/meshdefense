@@ -1,0 +1,21 @@
+# Platform One Big Bang Iron Bank Images (registry1.dso.mil)
+registry1.dso.mil/ironbank/istio/pilot:1.20.2
+registry1.dso.mil/ironbank/istio/proxyv2:1.20.2
+registry1.dso.mil/ironbank/open-policy-agent/gatekeeper:v3.14.0
+registry1.dso.mil/ironbank/opensource/prometheus/prometheus:v2.49.0
+registry1.dso.mil/ironbank/opensource/prometheus/alertmanager:v0.26.0
+registry1.dso.mil/ironbank/opensource/prometheus/node-exporter:v1.7.0
+registry1.dso.mil/ironbank/big-bang/grafana:10.2.3
+registry1.dso.mil/ironbank/fluent/fluent-bit:2.2.2
+registry1.dso.mil/ironbank/neuvector/controller:5.3.0
+registry1.dso.mil/ironbank/neuvector/enforcer:5.3.0
+registry1.dso.mil/ironbank/neuvector/manager:5.3.0
+registry1.dso.mil/ironbank/redhat/keycloak/keycloak:23.0.4
+registry1.dso.mil/ironbank/hashicorp/vault/vault:1.15.5
+registry1.dso.mil/ironbank/gitlab/gitlab-ee:v16.8.1-ee
+registry1.dso.mil/ironbank/gitlab/gitlab-runner:v16.8.0
+registry1.dso.mil/ironbank/sonarsource/sonarqube:10.3.0-community
+registry1.dso.mil/ironbank/opensource/postgres/postgresql:15.5
+registry1.dso.mil/ironbank/anchore/grype:v0.74.0
+registry1.dso.mil/ironbank/redhat/ubi/ubi9:latest
+registry1.dso.mil/ironbank/redhat/ubi/ubi9-micro:latest

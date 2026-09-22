@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: meshdefense-security-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+    app.kubernetes.io/name: monitoring
+spec:
+  groups:
+    - name: meshdefense.security
+      rules:
+        - alert: AirgapEgressAttemptDetected
+          expr: sum(rate(istio_requests_total{destination_service="BlackHoleCluster"}[2m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            tier: security
+          annotations:
+            summary: "Outbound egress connection blocked by Istio BlackHole"
+            description: "A pod in the cluster attempted to initiate an outbound network connection outside the permitted air-gap service entries."
+        - alert: HighPrivilegedPodCreated
+          expr: count(kube_pod_container_status_running{container=~".*"} * on(pod) group_left() kube_pod_spec_volumes_hostpath{path="/"}) > 0
+          for: 1m
+          labels:
+            severity: warning
+            tier: compliance
+          annotations:
+            summary: "Pod running with root filesystem hostPath mounted"
+            description: "STIG policy violation: Pod is running with host filesystem mounts."

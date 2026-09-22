@@ -1,0 +1,7 @@
+region             = "us-gov-west-1"
+vpc_id             = "vpc-0123456789abcdef2"
+vpc_cidr           = "10.102.0.0/16"
+private_subnet_ids = ["subnet-05555555555555555", "subnet-06666666666666666", "subnet-07777777777777777"]
+route_table_ids    = ["rtb-0123456789abcdef2"]
+kubernetes_version = "1.29"
+bastion_ami_id     = "ami-0123456789abcdef0"

@@ -1,0 +1,28 @@
+# ==============================================================================
+# SonarQube Helm Values for Air-Gapped Big Bang
+# ==============================================================================
+
+image:
+  repository: "registry.il6.meshdefense.internal/ironbank/sonarsource/sonarqube"
+  tag: "10.3.0-community"
+  pullSecrets:
+    - name: "harbor-registry-secret"
+
+community:
+  enabled: true
+
+# Database: internal PostgreSQL (hardened Iron Bank image)
+postgresql:
+  enabled: true
+  image:
+    repository: "registry.il6.meshdefense.internal/ironbank/opensource/postgres/postgresql"
+    tag: "15.5"
+
+# Security & Istio integration
+securityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+
+ingress:
+  enabled: false # Routed via Istio VirtualService in Big Bang

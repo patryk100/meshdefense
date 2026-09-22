@@ -1,0 +1,29 @@
+# ==============================================================================
+# Keycloak SSO / Identity Provider Helm Values for Air-Gapped Big Bang
+# ==============================================================================
+
+image:
+  repository: "registry.il6.meshdefense.internal/ironbank/redhat/keycloak/keycloak"
+  tag: "23.0.4"
+  pullSecrets:
+    - name: "harbor-registry-secret"
+
+replicas: 2
+
+auth:
+  adminUser: "admin"
+
+database:
+  vendor: "postgres"
+  hostname: "keycloak-postgresql.keycloak.svc.cluster.local"
+  port: 5432
+  database: "keycloak"
+
+# DoD CAC / PKI mTLS Client Authentication Settings
+extraEnvVars:
+  - name: "KC_HTTP_ENABLED"
+    value: "true"
+  - name: "KC_PROXY"
+    value: "edge"
+  - name: "KC_HOSTNAME_STRICT"
+    value: "false"
