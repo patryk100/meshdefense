@@ -1,6 +1,6 @@
 variable "region" {
-  type        = string
-  default     = "us-gov-west-1"
+  type    = string
+  default = "us-gov-west-1"
 }
 
 variable "vpc_id" {
@@ -9,8 +9,8 @@ variable "vpc_id" {
 }
 
 variable "vpc_cidr" {
-  type        = string
-  default     = "10.100.0.0/16"
+  type    = string
+  default = "10.100.0.0/16"
 }
 
 variable "private_subnet_ids" {
@@ -24,8 +24,8 @@ variable "route_table_ids" {
 }
 
 variable "kubernetes_version" {
-  type        = string
-  default     = "1.29"
+  type    = string
+  default = "1.29"
 }
 
 variable "bastion_ami_id" {

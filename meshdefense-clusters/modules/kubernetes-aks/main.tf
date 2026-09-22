@@ -22,12 +22,12 @@ resource "azurerm_user_assigned_identity" "aks" {
 # Azure AKS Private Cluster (IL6 Government Secret Configuration)
 # --------------------------------------------------------------------------------------------------
 resource "azurerm_kubernetes_cluster" "this" {
-  name                    = var.cluster_name
-  location                = var.location
-  resource_group_name     = var.resource_group_name
+  name                       = var.cluster_name
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
   dns_prefix_private_cluster = "${var.cluster_name}-priv"
-  kubernetes_version      = var.kubernetes_version
-  private_cluster_enabled = true # CRITICAL FOR AIRGAP / IL6 ENCLAVES
+  kubernetes_version         = var.kubernetes_version
+  private_cluster_enabled    = true # CRITICAL FOR AIRGAP / IL6 ENCLAVES
 
   # System Pool (Core Big Bang components: Flux, Istio, OPA/Gatekeeper)
   default_node_pool {

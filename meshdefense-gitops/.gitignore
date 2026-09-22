@@ -1,0 +1,10 @@
+# Unencrypted secret files (ONLY *.enc.yaml should be committed)
+*.dec.yaml
+*secret.yaml
+!*secret.enc.yaml
+!*secrets/*.enc.yaml
+
+# OS / temporary files
+.DS_Store
+*.tmp
+*.swp

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bigbang-core-values
+  namespace: bigbang
+data:
+  values.yaml: |
+    # Baseline Big Bang Air-Gap Values
+    domain: "il6.meshdefense.internal"
+
+    registryCredentials:
+      - registry: "registry.il6.meshdefense.internal"
+        username: "airgap-robot"
+
+    imagePullSecrets:
+      - name: "harbor-registry-secret"
+
+    istio:
+      enabled: true
+      values:
+        global:
+          hub: "registry.il6.meshdefense.internal/ironbank/istio"
+        meshConfig:
+          enableAutoMtls: true
+          outboundTrafficPolicy:
+            mode: REGISTRY_ONLY
+
+    gatekeeper:
+      enabled: true
+
+    monitoring:
+      enabled: true
+
+    neuvector:
+      enabled: true
+
+    fluentbit:
+      enabled: true
+
+    networkPolicies:
+      enabled: true

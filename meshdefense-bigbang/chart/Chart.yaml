@@ -4,6 +4,7 @@ description: Platform One Big Bang Helm umbrella chart mirrored and packaged for
 type: application
 version: 2.46.0
 appVersion: "2.46.0"
+icon: https://repo1.dso.mil/assets/favicon-7951a1a59626c19c177772d9f1b63395.png
 maintainers:
   - name: MeshDefense Platform Engineering
     email: devsecops@meshdefense.internal

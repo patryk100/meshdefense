@@ -1,0 +1,11 @@
+# Container image tarballs & archives
+*.tar
+*.tar.gz
+
+# Local Helm packaging
+*.tgz
+
+# OS / temporary files
+.DS_Store
+*.tmp
+*.swp

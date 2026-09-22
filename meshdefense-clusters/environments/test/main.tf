@@ -42,10 +42,10 @@ module "kubernetes" {
   vpc_cidr           = var.vpc_cidr
   private_subnet_ids = var.private_subnet_ids
 
-  system_node_instance_types   = ["m6i.xlarge"]
-  system_node_desired_size     = 3
-  system_node_min_size         = 2
-  system_node_max_size         = 4
+  system_node_instance_types = ["m6i.xlarge"]
+  system_node_desired_size   = 3
+  system_node_min_size       = 2
+  system_node_max_size       = 4
 
   workload_node_instance_types = ["m6i.2xlarge"]
   workload_node_desired_size   = 3

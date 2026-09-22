@@ -43,10 +43,10 @@ module "kubernetes" {
   private_subnet_ids = var.private_subnet_ids
 
   # Production-parity sizing for staging
-  system_node_instance_types   = ["m6i.2xlarge"]
-  system_node_desired_size     = 3
-  system_node_min_size         = 3
-  system_node_max_size         = 6
+  system_node_instance_types = ["m6i.2xlarge"]
+  system_node_desired_size   = 3
+  system_node_min_size       = 3
+  system_node_max_size       = 6
 
   workload_node_instance_types = ["m6i.4xlarge"]
   workload_node_desired_size   = 3

@@ -59,26 +59,26 @@ variable "authorized_cidr_blocks" {
 }
 
 variable "system_machine_type" {
-  type        = string
-  default     = "e2-standard-8"
+  type    = string
+  default = "e2-standard-8"
 }
 
 variable "system_node_count" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "workload_machine_type" {
-  type        = string
-  default     = "e2-standard-16"
+  type    = string
+  default = "e2-standard-16"
 }
 
 variable "workload_node_count" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "labels" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

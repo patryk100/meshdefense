@@ -19,9 +19,9 @@ resource "kubernetes_namespace" "harbor" {
   metadata {
     name = var.namespace
     labels = {
-      "app.kubernetes.io/name"       = "harbor"
-      "meshdefense.io/environment"   = var.environment
-      "istio-injection"              = "disabled" # Standalone during initial bootstrap
+      "app.kubernetes.io/name"     = "harbor"
+      "meshdefense.io/environment" = var.environment
+      "istio-injection"            = "disabled" # Standalone during initial bootstrap
     }
   }
 }
@@ -30,10 +30,10 @@ resource "kubernetes_namespace" "harbor" {
 # Harbor Helm Release (Air-Gapped Local OCI Registry)
 # --------------------------------------------------------------------------------------------------
 resource "helm_release" "harbor" {
-  name       = "harbor"
-  namespace  = kubernetes_namespace.harbor.metadata[0].name
-  chart      = var.harbor_chart_path
-  version    = var.harbor_chart_version
+  name      = "harbor"
+  namespace = kubernetes_namespace.harbor.metadata[0].name
+  chart     = var.harbor_chart_path
+  version   = var.harbor_chart_version
 
   values = [
     yamlencode({
@@ -50,10 +50,10 @@ resource "helm_release" "harbor" {
         imageChartStorage = {
           type = var.storage_type # s3, azure, gcs, or filesystem
           s3 = var.storage_type == "s3" ? {
-            bucket    = var.storage_bucket
-            region    = var.storage_region
-            encrypt   = true
-            secure    = true
+            bucket  = var.storage_bucket
+            region  = var.storage_region
+            encrypt = true
+            secure  = true
           } : null
         }
       }

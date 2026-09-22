@@ -21,8 +21,8 @@ variable "harbor_chart_path" {
 }
 
 variable "harbor_chart_version" {
-  type        = string
-  default     = "1.14.0"
+  type    = string
+  default = "1.14.0"
 }
 
 variable "tls_secret_name" {
@@ -44,6 +44,6 @@ variable "storage_bucket" {
 }
 
 variable "storage_region" {
-  type        = string
-  default     = ""
+  type    = string
+  default = ""
 }

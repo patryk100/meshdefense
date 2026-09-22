@@ -1,5 +1,5 @@
 variable "environment" {
-  type        = string
+  type = string
 }
 
 variable "ami_id" {
@@ -8,20 +8,20 @@ variable "ami_id" {
 }
 
 variable "instance_type" {
-  type        = string
-  default     = "m6i.xlarge"
+  type    = string
+  default = "m6i.xlarge"
 }
 
 variable "subnet_id" {
-  type        = string
+  type = string
 }
 
 variable "vpc_id" {
-  type        = string
+  type = string
 }
 
 variable "vpc_cidr" {
-  type        = string
+  type = string
 }
 
 variable "kms_key_arn" {
@@ -30,6 +30,6 @@ variable "kms_key_arn" {
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

@@ -36,6 +36,6 @@ variable "internal_domain" {
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

@@ -1,0 +1,10 @@
+# Helm package archives
+*.tgz
+
+# OS / temporary files
+.DS_Store
+*.tmp
+*.swp
+
+# Vendored local subcharts (if excluded or tracked via mirror scripts)
+# chart/charts/*.tgz

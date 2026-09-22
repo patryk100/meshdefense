@@ -37,18 +37,18 @@ variable "system_vm_size" {
 }
 
 variable "system_node_count" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "system_min_count" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "system_max_count" {
-  type        = number
-  default     = 6
+  type    = number
+  default = 6
 }
 
 variable "workload_vm_size" {
@@ -58,21 +58,21 @@ variable "workload_vm_size" {
 }
 
 variable "workload_node_count" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "workload_min_count" {
-  type        = number
-  default     = 2
+  type    = number
+  default = 2
 }
 
 variable "workload_max_count" {
-  type        = number
-  default     = 10
+  type    = number
+  default = 10
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

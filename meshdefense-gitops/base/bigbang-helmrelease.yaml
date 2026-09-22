@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: bigbang
+  namespace: bigbang
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: "./chart"
+      sourceRef:
+        kind: GitRepository
+        name: bigbang-repo
+        namespace: bigbang
+      interval: 5m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: ConfigMap
+      name: bigbang-core-values
+      valuesKey: "values.yaml"

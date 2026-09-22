@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bigbang-test-values
+  namespace: bigbang
+data:
+  values.yaml: |
+    # Test Environment Specific Overrides
+    domain: "test.il6.meshdefense.internal"
+
+    monitoring:
+      values:
+        prometheus:
+          prometheusSpec:
+            replicas: 2
+            retention: "14d"
+        grafana:
+          replicas: 2
+
+    neuvector:
+      values:
+        controller:
+          replicas: 2
+
+    addons:
+      gitlab:
+        enabled: true
+      sonarqube:
+        enabled: true
+      vault:
+        enabled: false
+      keycloak:
+        enabled: false

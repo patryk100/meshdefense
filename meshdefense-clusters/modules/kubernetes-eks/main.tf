@@ -17,8 +17,8 @@ resource "aws_kms_key" "eks_secrets" {
   enable_key_rotation     = true
 
   tags = merge(var.tags, {
-    Name        = "${var.cluster_name}-secrets-kms"
-    Compliance  = "DoD-IL6"
+    Name       = "${var.cluster_name}-secrets-kms"
+    Compliance = "DoD-IL6"
   })
 }
 
@@ -37,8 +37,8 @@ resource "aws_iam_role" "control_plane" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "eks.amazonaws.com"
         }
@@ -124,8 +124,8 @@ resource "aws_iam_role" "node_group" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "ec2.amazonaws.com"
         }

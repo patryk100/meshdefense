@@ -12,10 +12,10 @@ provider "aws" {
   region = var.region
   default_tags {
     tags = {
-      Environment = "prod"
-      Project     = "MeshDefense"
-      ManagedBy   = "Terraform"
-      Compliance  = "DoD-IL6"
+      Environment    = "prod"
+      Project        = "MeshDefense"
+      ManagedBy      = "Terraform"
+      Compliance     = "DoD-IL6"
       Classification = "Secret"
     }
   }
@@ -46,11 +46,11 @@ module "kubernetes" {
   private_subnet_ids = var.private_subnet_ids
 
   # Production sizing: Multi-AZ HA, dedicated compute pools
-  ami_type                     = "BOTTLEROCKET_x86_64" # Immutable, minimal attack surface
-  system_node_instance_types   = ["m6i.2xlarge"]
-  system_node_desired_size     = 3
-  system_node_min_size         = 3
-  system_node_max_size         = 6
+  ami_type                   = "BOTTLEROCKET_x86_64" # Immutable, minimal attack surface
+  system_node_instance_types = ["m6i.2xlarge"]
+  system_node_desired_size   = 3
+  system_node_min_size       = 3
+  system_node_max_size       = 6
 
   workload_node_instance_types = ["m6i.4xlarge"]
   workload_node_desired_size   = 6

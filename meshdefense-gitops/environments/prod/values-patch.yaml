@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bigbang-prod-values
+  namespace: bigbang
+data:
+  values.yaml: |
+    # Production Environment Specific Overrides (Hardened Multi-AZ HA)
+    domain: "prod.il6.meshdefense.internal"
+
+    istio:
+      values:
+        pilot:
+          autoscaleEnabled: true
+          minReplicas: 3
+          maxReplicas: 10
+        meshConfig:
+          enableAutoMtls: true
+          outboundTrafficPolicy:
+            mode: REGISTRY_ONLY
+
+    monitoring:
+      values:
+        prometheus:
+          prometheusSpec:
+            replicas: 3
+            retention: "90d"
+            resources:
+              requests:
+                cpu: "2"
+                memory: "8Gi"
+        grafana:
+          replicas: 3
+
+    neuvector:
+      values:
+        controller:
+          replicas: 3
+
+    gatekeeper:
+      values:
+        replicas: 3
+
+    addons:
+      gitlab:
+        enabled: true
+      sonarqube:
+        enabled: true
+      keycloak:
+        enabled: true
+      vault:
+        enabled: true
+
+    networkPolicies:
+      enabled: true
+      controlPlane:
+        enabled: true
