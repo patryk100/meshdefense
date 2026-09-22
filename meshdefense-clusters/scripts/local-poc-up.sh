@@ -79,11 +79,32 @@ kubectl create secret docker-registry harbor-registry-secret \
   --namespace="bigbang" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# 9. Apply Big Bang POC Kustomize overlay directly
+# 9. Install Flux v2 GitOps Engine (CRDs & Controllers)
+echo "[*] Installing Flux v2 GitOps engine..."
+if command -v flux &> /dev/null; then
+  echo " -> Using local flux CLI..."
+  flux install --namespace=flux-system
+else
+  echo " -> flux CLI not found. Installing Flux v2 via official release manifests..."
+  kubectl apply -f https://github.com/fluxcd/flux2/releases/latest/download/install.yaml
+fi
+
+echo "[*] Waiting for Flux v2 CRDs to establish..."
+kubectl wait --for=condition=Established --timeout=60s \
+  crd/helmreleases.helm.toolkit.fluxcd.io \
+  crd/gitrepositories.source.toolkit.fluxcd.io \
+  crd/kustomizations.kustomize.toolkit.fluxcd.io
+
+echo "[*] Waiting for Flux v2 controllers to become ready..."
+kubectl rollout status deployment/source-controller -n flux-system --timeout=120s
+kubectl rollout status deployment/helm-controller -n flux-system --timeout=120s
+kubectl rollout status deployment/kustomize-controller -n flux-system --timeout=120s
+
+# 10. Apply Big Bang POC Kustomize overlay
 GITOPS_DIR="$SCRIPT_DIR/../../meshdefense-gitops"
 if [[ -d "$GITOPS_DIR/environments/poc" ]]; then
   echo "[*] Applying MeshDefense POC Kustomize overlay..."
-  kubectl apply -k "$GITOPS_DIR/environments/poc" || echo "[!] Applied with initial CRD wait."
+  kubectl apply -k "$GITOPS_DIR/environments/poc"
 fi
 
 echo "=========================================================="

@@ -3,7 +3,8 @@
 *secret.yaml
 !*secret.enc.yaml
 !**/secrets/*.enc.yaml
-!**/local-registry-secret.yaml
+!**/local-*.yaml
+!**/secrets/local-*.yaml
 
 # OS / temporary files
 .DS_Store

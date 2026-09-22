@@ -7,6 +7,7 @@ resources:
   - ../../base
   - values-patch.yaml
   - secrets/local-registry-secret.yaml
+  - secrets/local-git-secret.yaml
 
 patches:
   - target:
@@ -19,3 +20,16 @@ patches:
           kind: ConfigMap
           name: bigbang-poc-values
           valuesKey: "values.yaml"
+  - target:
+      kind: GitRepository
+      name: bigbang-repo
+    patch: |-
+      - op: replace
+        path: /spec/url
+        value: "https://repo1.dso.mil/big-bang/bigbang.git"
+      - op: replace
+        path: /spec/ref
+        value:
+          tag: "2.46.0"
+      - op: remove
+        path: /spec/secretRef
