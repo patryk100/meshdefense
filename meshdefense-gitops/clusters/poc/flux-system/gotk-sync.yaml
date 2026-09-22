@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: poc/local-cost-effective
+    branch: main
   url: https://gitlab.il6.meshdefense.internal/meshdefense/meshdefense-gitops.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
