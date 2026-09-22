@@ -24,7 +24,7 @@ istio:
   values:
     global:
       hub: "registry.il6.meshdefense.internal/ironbank/istio"
-      tag: "1.20.2"
+      tag: "1.22.1"
     meshConfig:
       enableAutoMtls: true
       defaultConfig:
@@ -37,7 +37,7 @@ gatekeeper:
   values:
     image:
       repository: "registry.il6.meshdefense.internal/ironbank/open-policy-agent/gatekeeper"
-      tag: "v3.14.0"
+      tag: "v3.16.1"
 
 monitoring:
   enabled: true
@@ -46,12 +46,12 @@ monitoring:
       prometheusSpec:
         image:
           repository: "registry.il6.meshdefense.internal/ironbank/opensource/prometheus/prometheus"
-          tag: "v2.49.0"
+          tag: "v2.51.2"
         retention: "30d"
     grafana:
       image:
         repository: "registry.il6.meshdefense.internal/ironbank/big-bang/grafana"
-        tag: "10.2.3"
+        tag: "10.4.1"
 
 neuvector:
   enabled: true
@@ -59,22 +59,22 @@ neuvector:
     manager:
       image:
         repository: "registry.il6.meshdefense.internal/ironbank/neuvector/manager"
-        tag: "5.3.0"
+        tag: "5.3.2"
     controller:
       image:
         repository: "registry.il6.meshdefense.internal/ironbank/neuvector/controller"
-        tag: "5.3.0"
+        tag: "5.3.2"
     enforcer:
       image:
         repository: "registry.il6.meshdefense.internal/ironbank/neuvector/enforcer"
-        tag: "5.3.0"
+        tag: "5.3.2"
 
 fluentbit:
   enabled: true
   values:
     image:
       repository: "registry.il6.meshdefense.internal/ironbank/fluent/fluent-bit"
-      tag: "2.2.2"
+      tag: "3.0.4"
 
 # ------------------------------------------------------------------------------
 # Add-on Packages (Disabled in base, enabled in overlays as needed)
@@ -86,11 +86,11 @@ addons:
       server:
         image:
           repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd"
-          tag: "v2.10.1"
+          tag: "v2.11.2"
       repoServer:
         image:
           repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd-repo-server"
-          tag: "v2.10.1"
+          tag: "v2.11.2"
       redis:
         image:
           repository: "registry.il6.meshdefense.internal/ironbank/opensource/redis/redis6"

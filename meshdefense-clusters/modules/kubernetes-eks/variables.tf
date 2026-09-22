@@ -10,7 +10,7 @@ variable "environment" {
 
 variable "kubernetes_version" {
   type        = string
-  default     = "1.29"
+  default     = "1.30"
   description = "Kubernetes version compatible with targeted Big Bang release"
 }
 

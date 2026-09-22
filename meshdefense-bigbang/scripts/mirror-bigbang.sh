@@ -6,7 +6,7 @@ set -euo pipefail
 # Run this on the Low-Side (Internet-connected machine) to build the transfer bundle
 # ==============================================================================
 
-TAG="${1:-2.46.0}"
+TAG="${1:-3.30.0}"
 EXPORT_DIR="${2:-/tmp/meshdefense-airgap-bundle}"
 REPO_URL="https://repo1.dso.mil/big-bang/bigbang.git"
 

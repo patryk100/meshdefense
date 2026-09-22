@@ -6,7 +6,7 @@ global:
   domain: "argocd.il6.meshdefense.internal"
   image:
     repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd"
-    tag: "v2.10.1"
+    tag: "v2.11.2"
     imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: "harbor-registry-secret"
@@ -25,7 +25,7 @@ repoServer:
   replicas: 2
   image:
     repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd-repo-server"
-    tag: "v2.10.1"
+    tag: "v2.11.2"
 
 # Application Controller
 controller:

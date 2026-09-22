@@ -21,7 +21,7 @@ variable "resource_group_name" {
 
 variable "kubernetes_version" {
   type        = string
-  default     = "1.29"
+  default     = "1.30"
   description = "Kubernetes version"
 }
 

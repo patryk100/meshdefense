@@ -25,7 +25,7 @@ variable "route_table_ids" {
 
 variable "kubernetes_version" {
   type    = string
-  default = "1.29"
+  default = "1.30"
 }
 
 variable "bastion_ami_id" {

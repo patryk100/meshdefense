@@ -30,6 +30,6 @@ patches:
       - op: replace
         path: /spec/ref
         value:
-          tag: "2.46.0"
+          tag: "3.30.0"
       - op: remove
         path: /spec/secretRef
