@@ -19,3 +19,6 @@ registry1.dso.mil/ironbank/opensource/postgres/postgresql:15.5
 registry1.dso.mil/ironbank/anchore/grype:v0.74.0
 registry1.dso.mil/ironbank/redhat/ubi/ubi9:latest
 registry1.dso.mil/ironbank/redhat/ubi/ubi9-micro:latest
+registry1.dso.mil/ironbank/opensource/argo/argocd:v2.10.1
+registry1.dso.mil/ironbank/opensource/argo/argocd-repo-server:v2.10.1
+registry1.dso.mil/ironbank/opensource/redis/redis6:6.2.14

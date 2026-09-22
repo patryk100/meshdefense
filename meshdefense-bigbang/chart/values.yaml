@@ -80,6 +80,21 @@ fluentbit:
 # Add-on Packages (Disabled in base, enabled in overlays as needed)
 # ------------------------------------------------------------------------------
 addons:
+  argocd:
+    enabled: false
+    values:
+      server:
+        image:
+          repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd"
+          tag: "v2.10.1"
+      repoServer:
+        image:
+          repository: "registry.il6.meshdefense.internal/ironbank/opensource/argo/argocd-repo-server"
+          tag: "v2.10.1"
+      redis:
+        image:
+          repository: "registry.il6.meshdefense.internal/ironbank/opensource/redis/redis6"
+          tag: "6.2.14"
   gitlab:
     enabled: false
   sonarqube:

@@ -81,6 +81,27 @@ data:
       enabled: false # Disabled by default in local POC to save RAM
 
     addons:
+      argocd:
+        enabled: true
+        values:
+          server:
+            replicas: 1
+            insecure: true
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "256Mi"
+          repoServer:
+            replicas: 1
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "256Mi"
+          redis:
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "128Mi"
       sonarqube:
         enabled: false
       gitlab:

@@ -23,6 +23,8 @@ data:
           replicas: 3
 
     addons:
+      argocd:
+        enabled: true
       gitlab:
         enabled: true
       sonarqube:
