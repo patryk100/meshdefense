@@ -46,39 +46,8 @@ for ns in "${NAMESPACES[@]}"; do
     -n "$ns"
 done
 
-echo "[*] Updating Big Bang POC ConfigMap values with Iron Bank credentials..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VALUES_FILE="$SCRIPT_DIR/../../meshdefense-gitops/environments/poc/values-patch.yaml"
-
-python3 -c "
-import re, sys
-values_path = '$VALUES_FILE'
-user = '''$IRONBANK_USER'''
-password = '''$IRONBANK_PASS'''
-
-with open(values_path, 'r') as f:
-    content = f.read()
-
-# Match any existing registryCredentials block
-pattern = r'    registryCredentials:\s*\n\s*-\s*registry:\s*\"?[^\n\"]+\"?\s*\n\s*username:\s*\"?[^\n\"]*\"?\s*\n\s*password:\s*\"?[^\n\"]*\"?\s*\n\s*email:\s*\"?[^\n\"]*\"?'
-
-replacement = f'''    registryCredentials:
-      - registry: \"registry1.dso.mil\"
-        username: \"{user}\"
-        password: \"{password}\"
-        email: \"user@meshdefense.local\"'''
-
-new_content, count = re.subn(pattern, replacement, content)
-if count > 0:
-    with open(values_path, 'w') as f:
-        f.write(new_content)
-    print('[+] Successfully patched values-patch.yaml with Iron Bank credentials.')
-else:
-    print('[*] Notice: registryCredentials pattern not matched; manual edit may be needed.')
-"
-
-echo "[*] Re-applying POC Kustomize overlay to cluster..."
-kubectl apply -k "$SCRIPT_DIR/../../meshdefense-gitops/environments/poc"
+echo "[*] Credentials injected directly into cluster secrets across core namespaces."
+echo "[i] Skipped writing plaintext credentials to Git-tracked values-patch.yaml for security."
 
 echo "[*] Triggering Flux reconciliation for Big Bang..."
 kubectl annotate --overwrite helmrelease bigbang -n bigbang reconcile.fluxcd.io/requestedAt="$(date +%s)" 2>/dev/null || true
