@@ -68,11 +68,37 @@ kubectl apply -f "${REPO_ROOT}/meshdefense-clusters/manifests/harbor-virtualserv
 
 # Step 5: Wait for Harbor core and registry
 echo -e "[*] Step 5: Waiting for Harbor core and database to initialize..."
-kubectl rollout status deployment/harbor-database -n harbor --timeout=180s || true
-kubectl rollout status deployment/harbor-redis -n harbor --timeout=180s || true
+kubectl rollout status statefulset/harbor-database -n harbor --timeout=180s || true
+kubectl rollout status statefulset/harbor-redis -n harbor --timeout=180s || true
 kubectl rollout status deployment/harbor-core -n harbor --timeout=240s || true
 kubectl rollout status deployment/harbor-registry -n harbor --timeout=240s || true
 kubectl rollout status deployment/harbor-portal -n harbor --timeout=180s || true
+
+# Step 6: Configure In-Cluster Node Containerd Registries & Initialize Projects
+echo -e "[*] Step 6: Configuring KinD nodes for in-cluster Harbor resolution..."
+INGRESS_IP=$(kubectl get svc -n istio-gateway public-ingressgateway -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+if [[ -n "${INGRESS_IP}" ]]; then
+  for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+    docker exec "$node" /bin/sh -c "
+      grep -q 'harbor.127.0.0.1.nip.io' /etc/hosts || echo '${INGRESS_IP} harbor.127.0.0.1.nip.io' >> /etc/hosts
+      mkdir -p /etc/containerd/certs.d/harbor.127.0.0.1.nip.io
+      cat <<EOF > /etc/containerd/certs.d/harbor.127.0.0.1.nip.io/hosts.toml
+server = \"https://harbor.127.0.0.1.nip.io:443\"
+
+[host.\"https://harbor.127.0.0.1.nip.io:443\"]
+  skip_verify = true
+EOF
+    " 2>/dev/null || true
+  done
+  echo -e "${GREEN}[+] Cluster nodes configured to pull directly from harbor.127.0.0.1.nip.io.${NC}"
+fi
+
+# Initialize default 'ironbank' project via Harbor API
+echo -e "[*] Initializing default 'ironbank' project in Harbor..."
+kubectl run harbor-init-project --image=curlimages/curl --rm -i --restart=Never -q -- \
+  -sk -u admin:MeshDefenseHarbor2026! -X POST "http://harbor.harbor.svc.cluster.local:80/api/v2.0/projects" \
+  -H "Content-Type: application/json" \
+  -d '{"project_name": "ironbank", "metadata": {"public": "true"}}' 2>/dev/null || true
 
 echo ""
 echo -e "${GREEN}${BOLD}[+] Harbor registry successfully deployed with S3-backed encryption!${NC}"

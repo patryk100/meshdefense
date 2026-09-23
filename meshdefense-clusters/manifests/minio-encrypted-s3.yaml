@@ -110,6 +110,7 @@ spec:
             - /bin/sh
             - -c
             - |
+              export MC_CONFIG_DIR=/tmp/.mc
               echo "[*] Waiting for MinIO service..."
               until mc alias set local http://minio.minio.svc.cluster.local:9000 minioadmin MinioAdminPassword123!; do
                 echo "Retrying MinIO connection..."
@@ -120,3 +121,4 @@ spec:
               echo "[*] Enabling SSE-S3 encrypted persistence on 'harbor-registry'..."
               mc encrypt set sse-s3 local/harbor-registry
               echo "[+] MinIO S3 bucket 'harbor-registry' successfully provisioned with SSE-S3 encryption."
+              mc encrypt info local/harbor-registry
