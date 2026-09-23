@@ -1,0 +1,102 @@
+# ==============================================================================
+# MeshDefense: Harbor Registry Values with S3 Encrypted Object Persistence
+# ==============================================================================
+expose:
+  type: clusterIP
+  tls:
+    enabled: false
+
+externalURL: https://harbor.127.0.0.1.nip.io:8443
+
+# Encrypted S3 Object Persistence via MinIO
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  imageChartStorage:
+    type: s3
+    disableredirect: true
+    s3:
+      bucket: harbor-registry
+      region: us-east-1
+      regionendpoint: http://minio.minio.svc.cluster.local:9000
+      accesskey: minioadmin
+      secretkey: MinioAdminPassword123!
+      encrypt: true
+      secure: false
+      v4auth: true
+
+# Harbor Core
+core:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Harbor Portal (Web UI)
+portal:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Harbor Registry
+registry:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Harbor Jobservice
+jobservice:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+# Internal Database
+database:
+  internal:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# Internal Redis
+redis:
+  internal:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+# Disable heavy vulnerability scanner and legacy notary to save RAM in local cluster
+trivy:
+  enabled: false
+
+notary:
+  enabled: false
+
+# Default Admin Password
+harborAdminPassword: "MeshDefenseHarbor2026!"
