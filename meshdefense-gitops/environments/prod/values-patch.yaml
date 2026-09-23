@@ -10,10 +10,10 @@ data:
 
     istiod:
       values:
-        pilot:
+        upstream:
           autoscaleEnabled: true
-          minReplicas: 3
-          maxReplicas: 10
+          autoscaleMin: 3
+          autoscaleMax: 10
 
     monitoring:
       values:

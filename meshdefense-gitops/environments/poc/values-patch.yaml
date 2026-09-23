@@ -13,10 +13,10 @@ data:
     domain: "127.0.0.1.nip.io"
 
     registryCredentials:
-      - registry: "localhost:5001"
-        username: "poc-user"
-        password: "poc-password"
-        email: "poc@meshdefense.local"
+      - registry: "registry1.dso.mil"
+        username: "REDACTED_USERNAME"
+        password: "REDACTED_PASSWORD"
+        email: "user@meshdefense.local"
 
     istioCRDs:
       enabled: true
@@ -24,7 +24,7 @@ data:
     istiod:
       enabled: true
       values:
-        pilot:
+        upstream:
           autoscaleEnabled: false
           replicaCount: 1
           resources:
@@ -81,6 +81,30 @@ data:
     fluentbit:
       enabled: false # Disabled by default in local POC to save RAM
 
+    kyverno:
+      enabled: false
+
+    kyvernoPolicies:
+      enabled: false
+
+    kyvernoReporter:
+      enabled: false
+
+    loki:
+      enabled: false
+
+    tempo:
+      enabled: false
+
+    alloy:
+      enabled: false
+
+    bbctl:
+      enabled: false
+
+    kiali:
+      enabled: false
+
     addons:
       argocd:
         enabled: true
@@ -110,6 +134,8 @@ data:
       vault:
         enabled: false
       keycloak:
+        enabled: false
+      metricsServer:
         enabled: false
 
     networkPolicies:
