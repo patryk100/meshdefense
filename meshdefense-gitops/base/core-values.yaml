@@ -5,25 +5,23 @@ metadata:
   namespace: bigbang
 data:
   values.yaml: |
-    # Baseline Big Bang Air-Gap Values
+    # Baseline Big Bang Air-Gap Values (Big Bang 3.30.0 Compliant)
     domain: "il6.meshdefense.internal"
 
     registryCredentials:
       - registry: "registry.il6.meshdefense.internal"
         username: "airgap-robot"
+        password: "placeholder-password"
+        email: "devsecops@meshdefense.internal"
 
-    imagePullSecrets:
-      - name: "harbor-registry-secret"
-
-    istio:
+    istioCRDs:
       enabled: true
-      values:
-        global:
-          hub: "registry.il6.meshdefense.internal/ironbank/istio"
-        meshConfig:
-          enableAutoMtls: true
-          outboundTrafficPolicy:
-            mode: REGISTRY_ONLY
+
+    istiod:
+      enabled: true
+
+    istioGateway:
+      enabled: true
 
     gatekeeper:
       enabled: true

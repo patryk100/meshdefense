@@ -6,7 +6,7 @@ metadata:
 data:
   values.yaml: |
     # ==========================================================================
-    # MeshDefense POC: Cost-Effective / Local Resource Profiles
+    # MeshDefense POC: Cost-Effective / Local Resource Profiles (Big Bang 3.30.0)
     # Scaled down to run on a laptop (KinD) or small single-node VM (t3.2xlarge)
     # ==========================================================================
 
@@ -15,11 +15,13 @@ data:
     registryCredentials:
       - registry: "localhost:5001"
         username: "poc-user"
+        password: "poc-password"
+        email: "poc@meshdefense.local"
 
-    imagePullSecrets:
-      - name: "harbor-registry-secret"
+    istioCRDs:
+      enabled: true
 
-    istio:
+    istiod:
       enabled: true
       values:
         pilot:
@@ -32,10 +34,9 @@ data:
             limits:
               cpu: "500m"
               memory: "512Mi"
-        meshConfig:
-          enableAutoMtls: true
-          outboundTrafficPolicy:
-            mode: ALLOW_ANY # Relaxed for local POC ease of use
+
+    istioGateway:
+      enabled: true
 
     gatekeeper:
       enabled: true

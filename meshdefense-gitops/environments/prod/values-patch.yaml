@@ -8,16 +8,12 @@ data:
     # Production Environment Specific Overrides (Hardened Multi-AZ HA)
     domain: "prod.il6.meshdefense.internal"
 
-    istio:
+    istiod:
       values:
         pilot:
           autoscaleEnabled: true
           minReplicas: 3
           maxReplicas: 10
-        meshConfig:
-          enableAutoMtls: true
-          outboundTrafficPolicy:
-            mode: REGISTRY_ONLY
 
     monitoring:
       values:

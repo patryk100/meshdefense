@@ -9,6 +9,5 @@ metadata:
     meshdefense.io/role: "platform-config"
 data:
   domain: {{ .Values.domain | quote }}
-  airgap: "true"
-  mtls_mode: {{ .Values.istio.values.meshConfig.outboundTrafficPolicy.mode | quote }}
+  mtls_mode: "REGISTRY_ONLY"
   network_policies_enforced: {{ .Values.networkPolicies.enabled | quote }}
