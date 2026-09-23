@@ -32,7 +32,7 @@ echo "[*] Clearing any stale/deadlock admission webhooks..."
 kubectl delete validatingwebhookconfiguration gatekeeper-validating-webhook-configuration --ignore-not-found=true
 kubectl delete mutatingwebhookconfiguration gatekeeper-mutating-webhook-configuration --ignore-not-found=true
 
-NAMESPACES=("bigbang" "gatekeeper-system" "istio-system" "monitoring" "argocd")
+NAMESPACES=("bigbang" "kyverno" "istio-system" "istio-gateway" "monitoring" "argocd")
 
 for ns in "${NAMESPACES[@]}"; do
   echo "[*] Ensuring namespace '$ns' exists and secret is injected..."

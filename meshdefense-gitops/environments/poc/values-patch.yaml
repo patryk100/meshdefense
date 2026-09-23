@@ -86,6 +86,14 @@ data:
 
     kyvernoPolicies:
       enabled: true
+      values:
+        validationFailureAction: "Audit"
+        exclude:
+          any:
+            - resources:
+                namespaces:
+                  - kube-system
+                  - local-path-storage
 
     kyvernoReporter:
       enabled: false
