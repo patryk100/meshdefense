@@ -24,6 +24,12 @@ data:
       enabled: true
 
     gatekeeper:
+      enabled: false
+
+    kyverno:
+      enabled: true
+
+    kyvernoPolicies:
       enabled: true
 
     monitoring:

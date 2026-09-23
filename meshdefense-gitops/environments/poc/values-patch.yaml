@@ -39,17 +39,7 @@ data:
       enabled: true
 
     gatekeeper:
-      enabled: true
-      values:
-        replicas: 1
-        controllerManager:
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "300m"
-              memory: "256Mi"
+      enabled: false
 
     monitoring:
       enabled: true
@@ -82,10 +72,20 @@ data:
       enabled: false # Disabled by default in local POC to save RAM
 
     kyverno:
-      enabled: false
+      enabled: true
+      values:
+        upstream:
+          admissionController:
+            replicas: 1
+          backgroundController:
+            replicas: 1
+          cleanupController:
+            replicas: 1
+          reportsController:
+            replicas: 1
 
     kyvernoPolicies:
-      enabled: false
+      enabled: true
 
     kyvernoReporter:
       enabled: false
