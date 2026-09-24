@@ -69,6 +69,8 @@ module "kubernetes" {
   system_node_min_size       = 3
   system_node_max_size       = 6
 
+  admin_role_arns = [module.bastion.bastion_iam_role_arn]
+
   tags = {
     Cluster = "meshdefense-stg"
   }
