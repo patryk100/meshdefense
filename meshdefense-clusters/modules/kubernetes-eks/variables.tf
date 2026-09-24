@@ -5,13 +5,13 @@ variable "cluster_name" {
 
 variable "environment" {
   type        = string
-  description = "Deployment environment (dev, test, stg, prod)"
+  description = "Deployment environment (dev, test, stg, prod, poc-minimal)"
 }
 
 variable "kubernetes_version" {
   type        = string
-  default     = "1.30"
-  description = "Kubernetes version compatible with targeted Big Bang release"
+  default     = "1.33"
+  description = "Kubernetes version for EKS control plane (standard support version)"
 }
 
 variable "vpc_id" {
@@ -31,62 +31,55 @@ variable "private_subnet_ids" {
 
 variable "ami_type" {
   type        = string
-  default     = "BOTTLEROCKET_x86_64"
-  description = "AMI Type for workers (BOTTLEROCKET_x86_64 or AL2_x86_64 for DISA STIG compliance)"
+  default     = "AL2023_x86_64_STANDARD"
+  description = "AMI Type for workers (AL2023_x86_64_STANDARD or BOTTLEROCKET_x86_64 for DISA STIG / DoD compliance)"
 }
 
 variable "system_node_instance_types" {
   type        = list(string)
-  default     = ["m6i.2xlarge"]
+  default     = ["t3.xlarge"]
   description = "Instance types for system nodes (Core Big Bang, Istio, Gatekeeper, Flux)"
 }
 
 variable "system_node_desired_size" {
   type        = number
-  default     = 3
-  description = "Desired number of system nodes"
+  default     = 1
+  description = "Desired number of system bootstrap nodes"
 }
 
 variable "system_node_min_size" {
   type        = number
-  default     = 3
+  default     = 1
   description = "Minimum number of system nodes"
 }
 
 variable "system_node_max_size" {
   type        = number
-  default     = 6
-  description = "Maximum number of system nodes"
-}
-
-variable "workload_node_instance_types" {
-  type        = list(string)
-  default     = ["m6i.4xlarge"]
-  description = "Instance types for workload nodes (GitLab, SonarQube, Monitoring, apps)"
-}
-
-variable "workload_node_desired_size" {
-  type        = number
-  default     = 3
-  description = "Desired number of workload nodes"
-}
-
-variable "workload_node_min_size" {
-  type        = number
   default     = 2
-  description = "Minimum number of workload nodes"
-}
-
-variable "workload_node_max_size" {
-  type        = number
-  default     = 10
-  description = "Maximum number of workload nodes"
+  description = "Maximum number of system nodes"
 }
 
 variable "kms_key_arn" {
   type        = string
   default     = null
-  description = "Optional KMS Key ARN for EKS Secrets envelope encryption. If not provided, a dedicated key will be created."
+  description = "Customer Managed Key (CMK) ARN for EKS Secrets envelope encryption"
+}
+
+variable "ebs_kms_key_arn" {
+  type        = string
+  description = "Customer Managed Key (CMK) ARN for worker node EBS volume encryption"
+}
+
+variable "cluster_log_retention_days" {
+  type        = number
+  default     = 90
+  description = "Retention period for EKS control plane CloudWatch audit logs"
+}
+
+variable "enable_karpenter" {
+  type        = bool
+  default     = true
+  description = "Provision Karpenter controller IRSA role, node role, SQS interruption queue, and launch templates"
 }
 
 variable "tags" {
@@ -94,4 +87,3 @@ variable "tags" {
   default     = {}
   description = "Resource tags"
 }
-

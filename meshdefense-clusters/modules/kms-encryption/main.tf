@@ -107,13 +107,17 @@ locals {
       Sid    = "AllowDirectAccessToKeyForEBS"
       Effect = "Allow"
       Principal = {
-        AWS = "arn:${local.partition}:iam::${local.account_id}:root"
+        AWS = [
+          "arn:${local.partition}:iam::${local.account_id}:root",
+          "arn:${local.partition}:iam::${local.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+        ]
       }
       Action = [
         "kms:Encrypt",
         "kms:Decrypt",
         "kms:ReEncrypt*",
         "kms:GenerateDataKey*",
+        "kms:GenerateDataKeyWithoutPlaintext",
         "kms:DescribeKey"
       ]
       Resource = "*"
@@ -125,7 +129,10 @@ locals {
       Sid    = "AllowAttachmentOfPersistentResources"
       Effect = "Allow"
       Principal = {
-        AWS = "arn:${local.partition}:iam::${local.account_id}:root"
+        AWS = [
+          "arn:${local.partition}:iam::${local.account_id}:root",
+          "arn:${local.partition}:iam::${local.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+        ]
       }
       Action = [
         "kms:CreateGrant",

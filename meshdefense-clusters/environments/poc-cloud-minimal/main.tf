@@ -102,22 +102,21 @@ module "kubernetes" {
   vpc_cidr           = module.vpc.vpc_cidr
   private_subnet_ids = module.vpc.private_subnet_ids
   kms_key_arn        = module.kms_keyring.k8s_secrets_key_arn
+  ebs_kms_key_arn    = module.kms_keyring.ebs_key_arn
+  ami_type           = "AL2023_x86_64_STANDARD"
+  enable_karpenter   = true
 
-  # Ultra-minimal sizing: 1 system node, 1 workload node
+  # Ultra-minimal sizing: 1 system bootstrap node
   system_node_instance_types = ["t3.xlarge"]
   system_node_desired_size   = 1
   system_node_min_size       = 1
   system_node_max_size       = 2
 
-  workload_node_instance_types = ["t3.2xlarge"]
-  workload_node_desired_size   = 1
-  workload_node_min_size       = 1
-  workload_node_max_size       = 3
-
   tags = {
     Cluster = "meshdefense-${var.environment}-minimal"
   }
 }
+
 
 # --------------------------------------------------------------------------------------------------
 # 5. Day-0 Ephemeral Administrative Bastion & SSM Session Manager (Story 1.3)

@@ -151,6 +151,42 @@ output "rds_credentials_secret_name" {
   description = "Secrets Manager secret name containing master credentials"
 }
 
+output "eks_cluster_name" {
+  value       = try(module.kubernetes[0].cluster_name, null)
+  description = "EKS cluster name"
+}
+
+output "eks_cluster_endpoint" {
+  value       = try(module.kubernetes[0].cluster_endpoint, null)
+  description = "EKS private API server endpoint"
+}
+
+output "eks_oidc_provider_arn" {
+  value       = try(module.kubernetes[0].oidc_provider_arn, null)
+  description = "EKS OIDC provider ARN for IRSA"
+}
+
+output "eks_node_launch_template_id" {
+  value       = try(module.kubernetes[0].launch_template_id, null)
+  description = "Hardened EC2 launch template ID enforcing IMDSv2 and EBS CMK encryption"
+}
+
+output "karpenter_controller_role_arn" {
+  value       = try(module.kubernetes[0].karpenter_controller_role_arn, null)
+  description = "IAM Role ARN for Karpenter Controller"
+}
+
+output "karpenter_node_role_arn" {
+  value       = try(module.kubernetes[0].karpenter_node_role_arn, null)
+  description = "IAM Role ARN for Karpenter provisioned nodes"
+}
+
+output "karpenter_interruption_queue_url" {
+  value       = try(module.kubernetes[0].karpenter_interruption_queue_url, null)
+  description = "SQS Queue URL for Karpenter interruption handling"
+}
+
+
 
 
 

@@ -30,8 +30,8 @@ variable "enable_eks" {
 
 variable "kubernetes_version" {
   type        = string
-  default     = "1.30"
-  description = "Kubernetes version for EKS"
+  default     = "1.33"
+  description = "Kubernetes version for EKS control plane (standard support version)"
 }
 
 variable "enable_bastion" {
