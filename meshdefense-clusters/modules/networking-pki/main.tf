@@ -39,7 +39,9 @@ locals {
     "ssmmessages",
     "sts",
     "logs",
-    "monitoring"
+    "monitoring",
+    "secretsmanager",
+    "sqs"
   ]
 }
 
