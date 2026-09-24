@@ -112,6 +112,8 @@ module "kubernetes" {
   system_node_min_size       = 1
   system_node_max_size       = 2
 
+  admin_role_arns    = var.enable_bastion ? [module.bastion[0].bastion_iam_role_arn] : []
+
   tags = {
     Cluster = "meshdefense-${var.environment}-minimal"
   }
@@ -119,30 +121,7 @@ module "kubernetes" {
 
 
 # --------------------------------------------------------------------------------------------------
-# 5. Day-0 Ephemeral Administrative Bastion & SSM Session Manager (Story 1.3)
-# --------------------------------------------------------------------------------------------------
-module "bastion" {
-  count  = var.enable_bastion ? 1 : 0
-  source = "../../modules/bastion-jumpbox"
-
-  environment      = var.environment
-  instance_type    = var.bastion_instance_type
-  subnet_id        = module.vpc.private_subnet_ids[0]
-  vpc_id           = module.vpc.vpc_id
-  vpc_cidr         = module.vpc.vpc_cidr
-  ebs_kms_key_arn  = module.kms_keyring.ebs_key_arn
-  s3_kms_key_arn   = module.kms_keyring.s3_key_arn
-  logs_kms_key_arn = module.kms_network.key_arn
-  root_volume_size = 30 # Cost-effective size for minimal poc testing
-
-  tags = {
-    Role       = "Day-0-Bootstrap-Bastion"
-    Compliance = "NIST-800-53-AC-3_AC-4_SC-7_SC-13"
-  }
-}
-
-# --------------------------------------------------------------------------------------------------
-# 6. Air-Gapped S3 Object Storage Baseline & Lifecycle Policies (Story 1.4)
+# 5. Air-Gapped S3 Object Storage Baseline & Lifecycle Policies (Story 1.4)
 # --------------------------------------------------------------------------------------------------
 module "s3_storage" {
   source = "../../modules/s3-storage-baseline"
@@ -158,6 +137,30 @@ module "s3_storage" {
 
   tags = {
     Compliance = "NIST-800-53-SC-8_SC-13_SC-28_AC-3"
+  }
+}
+
+# --------------------------------------------------------------------------------------------------
+# 6. Day-0 Ephemeral Administrative Bastion & SSM Session Manager (Story 1.3)
+# --------------------------------------------------------------------------------------------------
+module "bastion" {
+  count  = var.enable_bastion ? 1 : 0
+  source = "../../modules/bastion-jumpbox"
+
+  environment              = var.environment
+  instance_type            = var.bastion_instance_type
+  subnet_id                = module.vpc.private_subnet_ids[0]
+  vpc_id                   = module.vpc.vpc_id
+  vpc_cidr                 = module.vpc.vpc_cidr
+  ebs_kms_key_arn          = module.kms_keyring.ebs_key_arn
+  s3_kms_key_arn           = module.kms_keyring.s3_key_arn
+  logs_kms_key_arn         = module.kms_network.key_arn
+  root_volume_size         = 30 # Cost-effective size for minimal poc testing
+  bootstrap_s3_bucket_arns = values(module.s3_storage.bucket_arns)
+
+  tags = {
+    Role       = "Day-0-Bootstrap-Bastion"
+    Compliance = "NIST-800-53-AC-3_AC-4_SC-7_SC-13"
   }
 }
 

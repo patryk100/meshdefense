@@ -180,46 +180,71 @@ resource "aws_iam_policy" "ssm_session_logging" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowCloudWatchLogs"
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
-        ]
-        Resource = [
-          "${aws_cloudwatch_log_group.ssm_sessions.arn}:*"
-        ]
-      },
-      {
-        Sid    = "AllowS3Logging"
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetEncryptionConfiguration"
-        ]
-        Resource = [
-          "${aws_s3_bucket.ssm_sessions.arn}/*",
-          aws_s3_bucket.ssm_sessions.arn
-        ]
-      },
-      {
-        Sid    = "AllowKMSKeyUsage"
-        Effect = "Allow"
-        Action = [
-          "kms:Encrypt",
-          "kms:Decrypt",
-          "kms:GenerateDataKey*"
-        ]
-        Resource = [
-          var.ebs_kms_key_arn,
-          var.s3_kms_key_arn,
-          var.logs_kms_key_arn
-        ]
-      }
-    ]
+    Statement = concat(
+      [
+        {
+          Sid    = "AllowCloudWatchLogs"
+          Effect = "Allow"
+          Action = [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogStreams"
+          ]
+          Resource = [
+            "${aws_cloudwatch_log_group.ssm_sessions.arn}:*"
+          ]
+        },
+        {
+          Sid    = "AllowS3Logging"
+          Effect = "Allow"
+          Action = [
+            "s3:PutObject",
+            "s3:GetEncryptionConfiguration"
+          ]
+          Resource = [
+            "${aws_s3_bucket.ssm_sessions.arn}/*",
+            aws_s3_bucket.ssm_sessions.arn
+          ]
+        },
+        {
+          Sid    = "AllowKMSKeyUsage"
+          Effect = "Allow"
+          Action = [
+            "kms:Encrypt",
+            "kms:Decrypt",
+            "kms:GenerateDataKey*"
+          ]
+          Resource = [
+            var.ebs_kms_key_arn,
+            var.s3_kms_key_arn,
+            var.logs_kms_key_arn
+          ]
+        },
+        {
+          Sid    = "AllowEKSClusterAccess"
+          Effect = "Allow"
+          Action = [
+            "eks:DescribeCluster",
+            "eks:ListClusters"
+          ]
+          Resource = "*"
+        }
+      ],
+      length(var.bootstrap_s3_bucket_arns) > 0 ? [
+        {
+          Sid    = "AllowBootstrapS3Read"
+          Effect = "Allow"
+          Action = [
+            "s3:GetObject",
+            "s3:ListBucket"
+          ]
+          Resource = concat(
+            var.bootstrap_s3_bucket_arns,
+            [for b in var.bootstrap_s3_bucket_arns : "${b}/*"]
+          )
+        }
+      ] : []
+    )
   })
 }
 

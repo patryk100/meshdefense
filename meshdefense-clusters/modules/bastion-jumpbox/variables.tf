@@ -51,6 +51,12 @@ variable "root_volume_size" {
   description = "Size of root volume in GB (cost-conscious default for minimal, can scale to 200 for Big Bang)"
 }
 
+variable "bootstrap_s3_bucket_arns" {
+  type        = list(string)
+  default     = []
+  description = "Optional list of S3 bucket ARNs containing bootstrap binaries, charts, and diode packages"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

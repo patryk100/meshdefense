@@ -186,6 +186,27 @@ resource "aws_eks_cluster" "this" {
 }
 
 # --------------------------------------------------------------------------------------------------
+# Modern EKS Cluster Access Entries (Kubernetes 1.30+ Native IAM Authentication)
+# --------------------------------------------------------------------------------------------------
+resource "aws_eks_access_entry" "admin_roles" {
+  for_each      = toset(var.admin_role_arns)
+  cluster_name  = aws_eks_cluster.this.name
+  principal_arn = each.value
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "admin_roles" {
+  for_each      = toset(var.admin_role_arns)
+  cluster_name  = aws_eks_cluster.this.name
+  policy_arn    = "arn:${local.partition}:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = each.value
+
+  access_scope {
+    type = "cluster"
+  }
+}
+
+# --------------------------------------------------------------------------------------------------
 # OIDC Identity Provider for IAM Roles for Service Accounts (IRSA)
 # --------------------------------------------------------------------------------------------------
 data "tls_certificate" "cluster" {

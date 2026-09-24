@@ -82,6 +82,12 @@ variable "enable_karpenter" {
   description = "Provision Karpenter controller IRSA role, node role, SQS interruption queue, and launch templates"
 }
 
+variable "admin_role_arns" {
+  type        = list(string)
+  default     = []
+  description = "List of IAM role ARNs granted ClusterAdmin permissions via modern EKS Access Entries"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

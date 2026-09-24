@@ -41,7 +41,9 @@ locals {
     "logs",
     "monitoring",
     "secretsmanager",
-    "sqs"
+    "sqs",
+    "eks",
+    "eks-auth"
   ]
 }
 
