@@ -15,6 +15,9 @@ terraform {
 data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
 data "aws_region" "current" {}
+data "aws_prefix_list" "s3" {
+  name = "com.amazonaws.${data.aws_region.current.name}.s3"
+}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
@@ -246,6 +249,14 @@ resource "aws_security_group" "bastion" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    description     = "Allow HTTPS outbound to S3 Gateway Endpoint"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    prefix_list_ids = [data.aws_prefix_list.s3.id]
   }
 
   egress {

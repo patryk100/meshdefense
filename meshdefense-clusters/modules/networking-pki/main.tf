@@ -38,7 +38,8 @@ locals {
     "ssm",
     "ssmmessages",
     "sts",
-    "logs"
+    "logs",
+    "monitoring"
   ]
 }
 

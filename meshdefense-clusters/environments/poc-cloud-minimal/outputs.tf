@@ -186,6 +186,16 @@ output "karpenter_interruption_queue_url" {
   description = "SQS Queue URL for Karpenter interruption handling"
 }
 
+output "vpc_endpoint_ids" {
+  value       = module.networking.vpc_endpoint_ids
+  description = "Map of all VPC interface endpoint IDs"
+}
+
+output "vpc_s3_endpoint_id" {
+  value       = module.networking.s3_endpoint_id
+  description = "ID of the S3 Gateway VPC endpoint"
+}
+
 
 
 

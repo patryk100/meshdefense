@@ -34,5 +34,15 @@ output "rds_security_group_id" {
   description = "Security group ID for RDS PostgreSQL in dev"
 }
 
+output "vpc_endpoint_ids" {
+  value       = module.networking.vpc_endpoint_ids
+  description = "Map of all VPC interface endpoint IDs"
+}
+
+output "vpc_s3_endpoint_id" {
+  value       = module.networking.s3_endpoint_id
+  description = "ID of the S3 Gateway VPC endpoint"
+}
+
 
 
