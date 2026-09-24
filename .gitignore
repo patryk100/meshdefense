@@ -1,5 +1,76 @@
+# ==============================================================================
+# MeshDefense: Global Git Ignore Rules
+# Protects against leaking state files, credentials, keys, and environments
+# ==============================================================================
+
+# OS & Editor
 .DS_Store
 *.swp
+*.swo
 *~
 *.bak
 *.tmp
+.idea/
+.vscode/
+
+# ------------------------------------------------------------------------------
+# Terraform & OpenTofu Security (Strict Global Rules)
+# ------------------------------------------------------------------------------
+# Local .terraform directories and plugin caches
+**/.terraform/
+.terraform/
+.terraform.lock.hcl.tmp
+
+# State files (NEVER commit state files - contains plaintext secrets & outputs)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfstate.backup
+
+# Variables files (contain runtime passwords, account IDs, tokens)
+*.tfvars
+*.tfvars.json
+**/*.tfvars
+**/*.tfvars.json
+!*.tfvars.example
+
+# Crash & execution logs
+crash.log
+crash.*.log
+tfplan
+*.plan
+
+# CLI configs
+.terraformrc
+terraform.rc
+
+# ------------------------------------------------------------------------------
+# Kubernetes, Helm & Cloud Credentials
+# ------------------------------------------------------------------------------
+# Kubeconfigs and certs
+kubeconfig
+*kubeconfig*
+*.kubeconfig
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Environment and secret files
+.env
+.env.*
+*.dec.yaml
+*secret.yaml
+!*secret.enc.yaml
+!**/secrets/*.enc.yaml
+!**/secrets/local-*.yaml
+
+# ------------------------------------------------------------------------------
+# Containers & Package Archives
+# ------------------------------------------------------------------------------
+*.tar
+*.tar.gz
+*.tgz
