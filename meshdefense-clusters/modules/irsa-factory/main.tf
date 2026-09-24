@@ -518,7 +518,119 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_kms" {
 }
 
 # --------------------------------------------------------------------------------------------------
-# 6. Extensible Dynamic Custom IRSA Roles Factory
+# 6. Flux v2 Source & Helm Controllers (Airgap OCI / Git Source IRSA)
+# --------------------------------------------------------------------------------------------------
+data "aws_iam_policy_document" "flux_assume" {
+  count = var.enable_flux ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [var.oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_issuer}:sub"
+      values   = [for sa in var.flux_service_accounts : "system:serviceaccount:${var.flux_namespace}:${sa}"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_issuer}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "flux" {
+  count = var.enable_flux ? 1 : 0
+
+  name                 = "${var.cluster_name}-irsa-flux"
+  description          = "Least-privilege IRSA role for Flux v2 GitOps controllers on ${var.cluster_name}"
+  assume_role_policy   = data.aws_iam_policy_document.flux_assume[0].json
+  permissions_boundary = var.permissions_boundary_arn
+
+  tags = merge(var.tags, {
+    Name           = "${var.cluster_name}-irsa-flux"
+    Component      = "flux-system"
+    Namespace      = var.flux_namespace
+    ServiceAccount = join("-", var.flux_service_accounts)
+  })
+}
+
+data "aws_iam_policy_document" "flux_policy" {
+  count = var.enable_flux ? 1 : 0
+
+  # ECR Read Access for OCI Helm repositories and container image tracking
+  statement {
+    sid    = "AllowECROCIRead"
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:DescribeRepositories",
+      "ecr:DescribeImages"
+    ]
+    resources = ["*"]
+  }
+
+  # S3 Read Access for OCI Buckets or Air-gap tar bundles
+  dynamic "statement" {
+    for_each = length(var.flux_s3_bucket_arns) > 0 ? [1] : []
+    content {
+      sid    = "AllowS3ArtifactRead"
+      effect = "Allow"
+      actions = [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ]
+      resources = concat(
+        var.flux_s3_bucket_arns,
+        [for b in var.flux_s3_bucket_arns : "${b}/*"]
+      )
+    }
+  }
+
+  # KMS Decryption for S3 artifacts and SOPS encrypted GitOps values
+  dynamic "statement" {
+    for_each = length(var.flux_kms_key_arns) > 0 ? [1] : []
+    content {
+      sid    = "AllowKMSDecryption"
+      effect = "Allow"
+      actions = [
+        "kms:Decrypt",
+        "kms:DescribeKey"
+      ]
+      resources = var.flux_kms_key_arns
+    }
+  }
+}
+
+resource "aws_iam_policy" "flux" {
+  count = var.enable_flux ? 1 : 0
+
+  name        = "${var.cluster_name}-irsa-flux-policy"
+  description = "Least privilege permissions for Flux v2 source & helm controllers"
+  policy      = data.aws_iam_policy_document.flux_policy[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "flux" {
+  count = var.enable_flux ? 1 : 0
+
+  role       = aws_iam_role.flux[0].name
+  policy_arn = aws_iam_policy.flux[0].arn
+}
+
+# --------------------------------------------------------------------------------------------------
+# 7. Extensible Dynamic Custom IRSA Roles Factory
 # --------------------------------------------------------------------------------------------------
 resource "aws_iam_role" "custom" {
   for_each = var.custom_roles

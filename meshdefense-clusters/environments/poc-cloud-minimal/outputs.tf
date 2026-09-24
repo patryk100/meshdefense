@@ -233,3 +233,8 @@ output "irsa_ebs_csi_role_arn" {
   value       = try(module.irsa_factory[0].ebs_csi_role_arn, null)
   description = "IAM Role ARN for AWS EBS CSI driver controller"
 }
+
+output "irsa_flux_role_arn" {
+  value       = try(module.irsa_factory[0].flux_role_arn, null)
+  description = "IAM Role ARN for Flux v2 GitOps controllers"
+}

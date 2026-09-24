@@ -170,6 +170,11 @@ module "irsa_factory" {
   enable_ebs_csi  = true
   ebs_kms_key_arn = module.kms_keyring.ebs_key_arn
 
+  # 6. Flux v2 GitOps Source & Helm Controllers (Story 2.5)
+  enable_flux         = true
+  flux_s3_bucket_arns = [module.s3_storage.bucket_arns["harbor"]]
+  flux_kms_key_arns   = [module.kms_keyring.s3_key_arn, module.kms_keyring.secrets_key_arn]
+
   tags = {
     Role       = "IRSA-ServiceAccounts"
     Compliance = "DoD-IL6,NIST-800-53-AC-3_AC-6_SC-12_SC-13"

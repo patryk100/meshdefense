@@ -1,0 +1,29 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: meshdefense-charts
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/part-of: flux
+spec:
+  interval: 10m
+  url: oci://123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense/charts
+  ref:
+    tag: latest
+  provider: aws
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: bigbang-enclave-sync
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/part-of: flux
+spec:
+  interval: 5m
+  path: ./clusters/poc
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: meshdefense-charts
+  timeout: 5m

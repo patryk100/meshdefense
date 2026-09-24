@@ -190,7 +190,40 @@ variable "ebs_kms_key_arn" {
 }
 
 # --------------------------------------------------------------------------------------------------
-# 6. Extensible Custom IRSA Roles Factory Map
+# 6. Flux v2 Source & Helm Controllers (Airgap OCI / Git Source IRSA)
+# --------------------------------------------------------------------------------------------------
+variable "enable_flux" {
+  description = "Whether to provision the IRSA role for Flux v2 source & helm controllers"
+  type        = bool
+  default     = true
+}
+
+variable "flux_namespace" {
+  description = "Kubernetes namespace where Flux v2 controllers run"
+  type        = string
+  default     = "flux-system"
+}
+
+variable "flux_service_accounts" {
+  description = "Kubernetes service account names for Flux v2 controllers that interact with AWS APIs (ECR/S3/KMS)"
+  type        = list(string)
+  default     = ["source-controller", "helm-controller", "kustomize-controller"]
+}
+
+variable "flux_s3_bucket_arns" {
+  description = "Optional S3 bucket ARNs that Flux v2 can read source artifacts or charts from"
+  type        = list(string)
+  default     = []
+}
+
+variable "flux_kms_key_arns" {
+  description = "Optional KMS Key ARNs for decrypting S3 objects or SOPS encrypted secrets"
+  type        = list(string)
+  default     = []
+}
+
+# --------------------------------------------------------------------------------------------------
+# 7. Extensible Custom IRSA Roles Factory Map
 # --------------------------------------------------------------------------------------------------
 variable "custom_roles" {
   description = "Map of custom IRSA roles to dynamically provision"

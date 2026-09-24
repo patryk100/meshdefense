@@ -23,6 +23,11 @@ output "ebs_csi_role_arn" {
   value       = try(aws_iam_role.ebs_csi[0].arn, null)
 }
 
+output "flux_role_arn" {
+  description = "IAM Role ARN for Flux v2 GitOps controllers IRSA"
+  value       = try(aws_iam_role.flux[0].arn, null)
+}
+
 output "custom_role_arns" {
   description = "Map of custom IRSA role names to their IAM Role ARNs"
   value = {
@@ -38,6 +43,7 @@ output "role_arns" {
     var.enable_logging ? { logging = aws_iam_role.logging[0].arn } : {},
     var.enable_vault ? { vault = aws_iam_role.vault[0].arn } : {},
     var.enable_ebs_csi ? { ebs_csi = aws_iam_role.ebs_csi[0].arn } : {},
+    var.enable_flux ? { flux = aws_iam_role.flux[0].arn } : {},
     { for k, v in aws_iam_role.custom : k => v.arn }
   )
 }
@@ -68,6 +74,12 @@ output "service_account_annotations" {
     var.enable_ebs_csi ? {
       "${var.ebs_csi_namespace}/${var.ebs_csi_service_account}" = {
         "eks.amazonaws.com/role-arn" = aws_iam_role.ebs_csi[0].arn
+      }
+    } : {},
+    var.enable_flux ? {
+      for sa in var.flux_service_accounts :
+      "${var.flux_namespace}/${sa}" => {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.flux[0].arn
       }
     } : {},
     {
