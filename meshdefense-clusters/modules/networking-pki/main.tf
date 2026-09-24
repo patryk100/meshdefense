@@ -57,11 +57,22 @@ resource "aws_security_group" "vpc_endpoints" {
   tags = var.tags
 }
 
+data "aws_vpc_endpoint_service" "interface" {
+  for_each     = toset([for s in local.services : s if s != "s3"])
+  service      = each.key
+  service_type = "Interface"
+}
+
+data "aws_vpc_endpoint_service" "s3" {
+  service      = "s3"
+  service_type = "Gateway"
+}
+
 resource "aws_vpc_endpoint" "interface_endpoints" {
   for_each = toset([for s in local.services : s if s != "s3"])
 
   vpc_id              = var.vpc_id
-  service_name        = "com.amazonaws.${var.region}.${each.key}"
+  service_name        = data.aws_vpc_endpoint_service.interface[each.key].service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = var.subnet_ids
   security_group_ids  = [aws_security_group.vpc_endpoints.id]
@@ -74,7 +85,7 @@ resource "aws_vpc_endpoint" "interface_endpoints" {
 
 resource "aws_vpc_endpoint" "s3" {
   vpc_id            = var.vpc_id
-  service_name      = "com.amazonaws.${var.region}.s3"
+  service_name      = data.aws_vpc_endpoint_service.s3.service_name
   vpc_endpoint_type = "Gateway"
   route_table_ids   = var.route_table_ids
 

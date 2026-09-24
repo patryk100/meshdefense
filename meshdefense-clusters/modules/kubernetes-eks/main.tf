@@ -8,6 +8,8 @@ terraform {
   }
 }
 
+data "aws_partition" "current" {}
+
 # --------------------------------------------------------------------------------------------------
 # AWS KMS Customer Managed Key (CMK) for EKS Envelope Encryption
 # --------------------------------------------------------------------------------------------------
@@ -50,12 +52,12 @@ resource "aws_iam_role" "control_plane" {
 }
 
 resource "aws_iam_role_policy_attachment" "control_plane_cluster_policy" {
-  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEKSClusterPolicy"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.control_plane.name
 }
 
 resource "aws_iam_role_policy_attachment" "control_plane_vpc_resource_controller" {
-  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEKSVPCResourceController"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSVPCResourceController"
   role       = aws_iam_role.control_plane.name
 }
 
@@ -137,17 +139,17 @@ resource "aws_iam_role" "node_group" {
 }
 
 resource "aws_iam_role_policy_attachment" "node_worker_policy" {
-  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.node_group.name
 }
 
 resource "aws_iam_role_policy_attachment" "node_cni_policy" {
-  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEKS_CNI_Policy"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.node_group.name
 }
 
 resource "aws_iam_role_policy_attachment" "node_registry_policy" {
-  policy_arn = "arn:aws-us-gov:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.node_group.name
 }
 

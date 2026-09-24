@@ -1,26 +1,35 @@
 variable "region" {
-  type    = string
-  default = "us-gov-west-1"
+  type        = string
+  default     = "us-east-1"
+  description = "Target AWS region (e.g. us-east-1 or us-gov-west-1)"
 }
 
-variable "vpc_id" {
-  type = string
+variable "environment" {
+  type        = string
+  default     = "poc-minimal"
+  description = "Environment identifier"
 }
 
 variable "vpc_cidr" {
-  type    = string
-  default = "10.104.0.0/16"
+  type        = string
+  default     = "10.104.0.0/16"
+  description = "CIDR block for the isolated VPC"
 }
 
-variable "private_subnet_ids" {
-  type = list(string)
+variable "az_count" {
+  type        = number
+  default     = 2
+  description = "Number of Availability Zones for private subnets (2 for minimal, 3 for prod)"
 }
 
-variable "route_table_ids" {
-  type = list(string)
+variable "enable_eks" {
+  type        = bool
+  default     = false
+  description = "Toggle to deploy EKS cluster on the isolated network"
 }
 
 variable "kubernetes_version" {
-  type    = string
-  default = "1.30"
+  type        = string
+  default     = "1.30"
+  description = "Kubernetes version for EKS"
 }
