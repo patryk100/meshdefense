@@ -124,6 +124,39 @@ module "rds" {
   }
 }
 
+# 6. Granular IRSA Factory & OIDC Trust Architecture (Story 2.3)
+module "irsa_factory" {
+  source = "../../modules/irsa-factory"
 
+  environment       = "dev"
+  cluster_name      = module.kubernetes.cluster_name
+  oidc_provider_arn = module.kubernetes.oidc_provider_arn
+  oidc_provider_url = module.kubernetes.oidc_provider_url
 
+  # 1. External Secrets Operator (ESO)
+  enable_external_secrets       = true
+  external_secrets_kms_key_arns = [module.kms_keyring.secrets_key_arn]
 
+  # 2. Velero (Cluster Backup & DR)
+  enable_velero      = true
+  velero_bucket_arn  = module.s3_storage.bucket_arns["velero"]
+  velero_kms_key_arn = module.kms_keyring.s3_key_arn
+
+  # 3. Vector / Fluent-Bit (Distributed Logging Shipper)
+  enable_logging       = true
+  logging_bucket_arn   = module.s3_storage.bucket_arns["loki"]
+  logging_kms_key_arns = [module.kms_keyring.secrets_key_arn, module.kms_keyring.s3_key_arn]
+
+  # 4. HashiCorp Vault (KMS Auto-Unseal)
+  enable_vault      = true
+  vault_kms_key_arn = module.kms_keyring.secrets_key_arn
+
+  # 5. AWS EBS CSI Driver (Storage Provisioner)
+  enable_ebs_csi  = true
+  ebs_kms_key_arn = module.kms_keyring.ebs_key_arn
+
+  tags = {
+    Role       = "IRSA-ServiceAccounts"
+    Compliance = "DoD-IL6,NIST-800-53-AC-3_AC-6_SC-12_SC-13"
+  }
+}

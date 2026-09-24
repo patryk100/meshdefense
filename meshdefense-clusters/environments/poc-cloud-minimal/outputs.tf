@@ -196,7 +196,40 @@ output "vpc_s3_endpoint_id" {
   description = "ID of the S3 Gateway VPC endpoint"
 }
 
+# --------------------------------------------------------------------------------------------------
+# IRSA Factory Outputs (Story 2.3)
+# --------------------------------------------------------------------------------------------------
+output "irsa_role_arns" {
+  value       = try(module.irsa_factory[0].role_arns, {})
+  description = "Map of all provisioned IRSA IAM Role ARNs"
+}
 
+output "irsa_service_account_annotations" {
+  value       = try(module.irsa_factory[0].service_account_annotations, {})
+  description = "Map of ServiceAccount annotations (eks.amazonaws.com/role-arn) ready for Helm/K8s manifests"
+}
 
+output "irsa_external_secrets_role_arn" {
+  value       = try(module.irsa_factory[0].external_secrets_role_arn, null)
+  description = "IAM Role ARN for External Secrets Operator"
+}
 
+output "irsa_velero_role_arn" {
+  value       = try(module.irsa_factory[0].velero_role_arn, null)
+  description = "IAM Role ARN for Velero Backup & DR"
+}
 
+output "irsa_logging_role_arn" {
+  value       = try(module.irsa_factory[0].logging_role_arn, null)
+  description = "IAM Role ARN for Logging Shipper (Vector/Fluent-bit)"
+}
+
+output "irsa_vault_role_arn" {
+  value       = try(module.irsa_factory[0].vault_role_arn, null)
+  description = "IAM Role ARN for HashiCorp Vault KMS auto-unseal"
+}
+
+output "irsa_ebs_csi_role_arn" {
+  value       = try(module.irsa_factory[0].ebs_csi_role_arn, null)
+  description = "IAM Role ARN for AWS EBS CSI driver controller"
+}

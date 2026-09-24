@@ -44,5 +44,15 @@ output "vpc_s3_endpoint_id" {
   description = "ID of the S3 Gateway VPC endpoint"
 }
 
+output "irsa_role_arns" {
+  value       = module.irsa_factory.role_arns
+  description = "Map of all provisioned IRSA IAM Role ARNs"
+}
+
+output "irsa_service_account_annotations" {
+  value       = module.irsa_factory.service_account_annotations
+  description = "Map of ServiceAccount annotations (eks.amazonaws.com/role-arn) ready for Helm/K8s manifests"
+}
+
 
 
