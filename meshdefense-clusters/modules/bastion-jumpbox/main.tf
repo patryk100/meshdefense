@@ -248,6 +248,15 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = [var.vpc_cidr]
   }
 
+  egress {
+    description = "Allow PostgreSQL outbound to internal databases"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+
   tags = merge(var.tags, {
     Name       = "${var.environment}-bastion-sg"
     Compliance = "NIST-800-53-SC-7"

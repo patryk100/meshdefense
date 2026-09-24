@@ -131,5 +131,26 @@ output "s3_audit_bucket" {
   description = "S3 bucket for cluster audit traces"
 }
 
+output "rds_endpoint" {
+  value       = try(module.rds[0].db_endpoint, null)
+  description = "Connection endpoint for PostgreSQL (hostname:port)"
+}
+
+output "rds_address" {
+  value       = try(module.rds[0].db_address, null)
+  description = "Private DNS hostname of the PostgreSQL instance"
+}
+
+output "rds_security_group_id" {
+  value       = try(module.rds[0].db_security_group_id, null)
+  description = "Security group ID attached to RDS"
+}
+
+output "rds_credentials_secret_name" {
+  value       = try(module.rds[0].db_credentials_secret_name, null)
+  description = "Secrets Manager secret name containing master credentials"
+}
+
+
 
 

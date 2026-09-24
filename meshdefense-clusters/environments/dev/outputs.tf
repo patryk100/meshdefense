@@ -24,4 +24,15 @@ output "s3_storage_buckets" {
   description = "Map of all S3 storage buckets in dev environment"
 }
 
+output "rds_endpoint" {
+  value       = module.rds.db_endpoint
+  description = "PostgreSQL connection endpoint in dev environment"
+}
+
+output "rds_security_group_id" {
+  value       = module.rds.db_security_group_id
+  description = "Security group ID for RDS PostgreSQL in dev"
+}
+
+
 

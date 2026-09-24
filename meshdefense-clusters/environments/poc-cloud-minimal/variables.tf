@@ -46,3 +46,16 @@ variable "bastion_instance_type" {
   description = "Instance type for the ephemeral administrative bastion"
 }
 
+variable "enable_rds" {
+  type        = bool
+  default     = true
+  description = "Toggle to deploy hardened RDS PostgreSQL instance"
+}
+
+variable "rds_multi_az" {
+  type        = bool
+  default     = true
+  description = "Enable Multi-AZ deployment for RDS PostgreSQL"
+}
+
+

@@ -162,4 +162,35 @@ module "s3_storage" {
   }
 }
 
+# --------------------------------------------------------------------------------------------------
+# 7. Multi-AZ Hardened RDS PostgreSQL for Platform State (Story 1.5)
+# --------------------------------------------------------------------------------------------------
+module "rds" {
+  count  = var.enable_rds ? 1 : 0
+  source = "../../modules/rds-postgresql"
+
+  environment         = var.environment
+  vpc_id              = module.vpc.vpc_id
+  subnet_ids          = module.vpc.private_subnet_ids
+  allowed_cidr_blocks = [module.vpc.vpc_cidr]
+  allowed_security_group_ids = [
+    try(module.bastion[0].bastion_security_group_id, null)
+  ]
+
+  # Cost-conscious minimal sizing for validation
+  instance_class        = "db.t4g.micro"
+  allocated_storage     = 20
+  max_allocated_storage = 50
+  multi_az              = var.rds_multi_az
+
+  # Cryptographic separation
+  kms_key_arn         = module.kms_keyring.rds_key_arn
+  secrets_kms_key_arn = module.kms_keyring.secrets_key_arn
+
+  tags = {
+    Compliance = "NIST-800-53-SC-7_SC-8_SC-13_CP-9"
+  }
+}
+
+
 
