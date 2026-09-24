@@ -31,6 +31,13 @@ module "kms_network" {
   alias_name   = "meshdefense-${var.environment}-network"
   description  = "MeshDefense Customer Managed Key for VPC Flow Logs and Network Telemetry"
   service_type = "cloudwatch"
+  admin_principals = [
+    "arn:aws:iam::123456789012:root",
+    "arn:aws:iam::123456789012:user/terraform-user"
+  ]
+  key_users = [
+    "arn:aws:iam::123456789012:user/terraform-user"
+  ]
   tags = {
     Role       = "Network-Telemetry-Encryption"
     Compliance = "NIST-800-53-SC-13"

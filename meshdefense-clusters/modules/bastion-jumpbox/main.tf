@@ -139,7 +139,7 @@ resource "aws_ssm_document" "session_preferences" {
       s3KeyPrefix                 = "sessions"
       s3EncryptionEnabled         = true
       cloudWatchLogGroupName      = aws_cloudwatch_log_group.ssm_sessions.name
-      cloudWatchEncryptionEnabled = true
+      cloudWatchEncryptionEnabled = false
       kmsKeyId                    = var.logs_kms_key_arn
       idleSessionTimeout          = "20"
       maxSessionDuration          = "60"
