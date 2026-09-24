@@ -106,4 +106,30 @@ output "bastion_ssm_logs_s3" {
   description = "S3 bucket recording encrypted SSM sessions"
 }
 
+output "s3_storage_buckets" {
+  value       = module.s3_storage.bucket_names
+  description = "Map of all provisioned air-gapped S3 workload buckets"
+}
+
+output "s3_harbor_bucket" {
+  value       = module.s3_storage.harbor_bucket_name
+  description = "S3 bucket for Harbor OCI container blobs"
+}
+
+output "s3_velero_bucket" {
+  value       = module.s3_storage.velero_bucket_name
+  description = "S3 bucket for Velero cluster backups"
+}
+
+output "s3_loki_bucket" {
+  value       = module.s3_storage.loki_bucket_name
+  description = "S3 bucket for Loki log chunks"
+}
+
+output "s3_audit_bucket" {
+  value       = module.s3_storage.audit_bucket_name
+  description = "S3 bucket for cluster audit traces"
+}
+
+
 

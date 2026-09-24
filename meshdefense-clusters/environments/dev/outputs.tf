@@ -19,3 +19,9 @@ output "kms_key_arns" {
   description = "Map of all multi-tier KMS key ARNs for dev environment"
 }
 
+output "s3_storage_buckets" {
+  value       = module.s3_storage.bucket_names
+  description = "Map of all S3 storage buckets in dev environment"
+}
+
+

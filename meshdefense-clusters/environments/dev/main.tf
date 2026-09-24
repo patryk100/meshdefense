@@ -88,4 +88,17 @@ module "bastion" {
   logs_kms_key_arn = module.kms_keyring.secrets_key_arn # or dedicated logs key
 }
 
+# 4. Air-Gapped S3 Object Storage Baseline & Lifecycle Policies (Story 1.4)
+module "s3_storage" {
+  source = "../../modules/s3-storage-baseline"
+
+  environment = "dev"
+  kms_key_arn = module.kms_keyring.s3_key_arn
+
+  tags = {
+    Compliance = "DoD-IL6,NIST-800-53-SC-8_SC-13_SC-28_AC-3"
+  }
+}
+
+
 
