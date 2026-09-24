@@ -13,3 +13,9 @@ output "private_dns_zone" {
 output "bastion_ip" {
   value = module.bastion.bastion_private_ip
 }
+
+output "kms_key_arns" {
+  value       = module.kms_keyring.all_key_arns
+  description = "Map of all multi-tier KMS key ARNs for dev environment"
+}
+

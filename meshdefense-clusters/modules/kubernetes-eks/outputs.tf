@@ -25,5 +25,6 @@ output "cluster_security_group_id" {
 
 output "kms_key_arn" {
   description = "ARN of the KMS CMK used for secret encryption"
-  value       = aws_kms_key.eks_secrets.arn
+  value       = local.kms_key_arn
 }
+

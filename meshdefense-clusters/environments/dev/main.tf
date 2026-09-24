@@ -21,6 +21,16 @@ provider "aws" {
   }
 }
 
+# 0. Multi-Tier KMS Keyring
+module "kms_keyring" {
+  source = "../../modules/kms-keyring"
+
+  environment = "dev"
+  tags = {
+    Compliance = "DoD-IL6,NIST-800-53-SC-12_SC-13"
+  }
+}
+
 # 1. Private Networking & PKI
 module "networking" {
   source = "../../modules/networking-pki"
@@ -45,6 +55,8 @@ module "kubernetes" {
   vpc_id             = var.vpc_id
   vpc_cidr           = var.vpc_cidr
   private_subnet_ids = var.private_subnet_ids
+  kms_key_arn        = module.kms_keyring.k8s_secrets_key_arn
+
 
   # Dev sizing: cost optimized
   system_node_instance_types = ["m6i.xlarge"]
@@ -71,5 +83,6 @@ module "bastion" {
   subnet_id   = var.private_subnet_ids[0]
   vpc_id      = var.vpc_id
   vpc_cidr    = var.vpc_cidr
-  kms_key_arn = module.kubernetes.kms_key_arn
+  kms_key_arn = module.kms_keyring.ebs_key_arn
 }
+

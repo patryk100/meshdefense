@@ -83,8 +83,15 @@ variable "workload_node_max_size" {
   description = "Maximum number of workload nodes"
 }
 
+variable "kms_key_arn" {
+  type        = string
+  default     = null
+  description = "Optional KMS Key ARN for EKS Secrets envelope encryption. If not provided, a dedicated key will be created."
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
   description = "Resource tags"
 }
+

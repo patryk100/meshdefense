@@ -22,18 +22,32 @@ provider "aws" {
 }
 
 # --------------------------------------------------------------------------------------------------
-# 1. Customer Managed KMS Key with Automated Rotation (NIST 800-53 SC-13 Cryptography)
+# 1. Customer Managed KMS Keys with Automated Rotation (NIST 800-53 SC-12 / SC-13)
 # --------------------------------------------------------------------------------------------------
+# Dedicated Network Telemetry & Flow Log Encryption CMK
 module "kms_network" {
   source = "../../modules/kms-encryption"
 
-  alias_name  = "meshdefense-${var.environment}-network"
-  description = "MeshDefense Customer Managed Key for VPC Flow Logs and Network Telemetry"
+  alias_name   = "meshdefense-${var.environment}-network"
+  description  = "MeshDefense Customer Managed Key for VPC Flow Logs and Network Telemetry"
+  service_type = "cloudwatch"
   tags = {
     Role       = "Network-Telemetry-Encryption"
     Compliance = "NIST-800-53-SC-13"
   }
 }
+
+# Multi-Tier KMS Keyring: K8s Secrets, EBS Volumes, S3 Buckets, RDS Instances, Secrets Manager
+module "kms_keyring" {
+  source = "../../modules/kms-keyring"
+
+  environment = var.environment
+  tags = {
+    Compliance = "NIST-800-53-SC-12_SC-13"
+  }
+
+}
+
 
 # --------------------------------------------------------------------------------------------------
 # 2. Isolated Multi-AZ VPC Architecture (NIST 800-53 SC-7 Boundary Protection)
@@ -87,6 +101,7 @@ module "kubernetes" {
   vpc_id             = module.vpc.vpc_id
   vpc_cidr           = module.vpc.vpc_cidr
   private_subnet_ids = module.vpc.private_subnet_ids
+  kms_key_arn        = module.kms_keyring.k8s_secrets_key_arn
 
   # Ultra-minimal sizing: 1 system node, 1 workload node
   system_node_instance_types = ["t3.xlarge"]

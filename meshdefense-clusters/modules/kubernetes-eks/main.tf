@@ -11,9 +11,10 @@ terraform {
 data "aws_partition" "current" {}
 
 # --------------------------------------------------------------------------------------------------
-# AWS KMS Customer Managed Key (CMK) for EKS Envelope Encryption
+# AWS KMS Customer Managed Key (CMK) for EKS Envelope Encryption (Optional internal fallback)
 # --------------------------------------------------------------------------------------------------
 resource "aws_kms_key" "eks_secrets" {
+  count                   = var.kms_key_arn == null ? 1 : 0
   description             = "EKS Secrets KMS Envelope Encryption Key for ${var.cluster_name}"
   deletion_window_in_days = 30
   enable_key_rotation     = true
@@ -25,9 +26,15 @@ resource "aws_kms_key" "eks_secrets" {
 }
 
 resource "aws_kms_alias" "eks_secrets" {
+  count         = var.kms_key_arn == null ? 1 : 0
   name          = "alias/${var.cluster_name}-k8s-secrets"
-  target_key_id = aws_kms_key.eks_secrets.key_id
+  target_key_id = aws_kms_key.eks_secrets[0].key_id
 }
+
+locals {
+  kms_key_arn = var.kms_key_arn != null ? var.kms_key_arn : (length(aws_kms_key.eks_secrets) > 0 ? aws_kms_key.eks_secrets[0].arn : null)
+}
+
 
 # --------------------------------------------------------------------------------------------------
 # IAM Role for EKS Control Plane
@@ -99,10 +106,11 @@ resource "aws_eks_cluster" "this" {
 
   encryption_config {
     provider {
-      key_arn = aws_kms_key.eks_secrets.arn
+      key_arn = local.kms_key_arn
     }
     resources = ["secrets"]
   }
+
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
