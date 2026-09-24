@@ -228,6 +228,24 @@ resource "aws_iam_policy" "ssm_session_logging" {
             "eks:ListClusters"
           ]
           Resource = "*"
+        },
+        {
+          Sid    = "AllowECRSeedRegistryAccess"
+          Effect = "Allow"
+          Action = [
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "ecr:PutImage",
+            "ecr:InitiateLayerUpload",
+            "ecr:UploadLayerPart",
+            "ecr:CompleteLayerUpload",
+            "ecr:DescribeRepositories",
+            "ecr:DescribeImages",
+            "ecr:ListImages"
+          ]
+          Resource = "*"
         }
       ],
       length(var.bootstrap_s3_bucket_arns) > 0 ? [

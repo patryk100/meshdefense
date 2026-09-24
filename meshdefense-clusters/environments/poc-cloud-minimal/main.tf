@@ -246,5 +246,22 @@ module "irsa_factory" {
   }
 }
 
+# --------------------------------------------------------------------------------------------------
+# 9. Seed ECR Registry & Day-0 Air-Gap Bootstrap Repositories (Story 3.1)
+# --------------------------------------------------------------------------------------------------
+module "airgap_seed_registry" {
+  source = "../../modules/airgap-registry"
+
+  environment = var.environment
+  additional_repositories = [
+    "external-secrets/external-secrets"
+  ]
+
+  tags = {
+    Role       = "Day-0-Air-Gap-Bootstrap"
+    Compliance = "DoD-IL6_NIST-800-53-SC-8_SC-13_RA-5"
+  }
+}
+
 
 

@@ -238,3 +238,8 @@ output "irsa_flux_role_arn" {
   value       = try(module.irsa_factory[0].flux_role_arn, null)
   description = "IAM Role ARN for Flux v2 GitOps controllers"
 }
+
+output "seed_ecr_repository_urls" {
+  value       = module.airgap_seed_registry.repository_urls
+  description = "Map of all provisioned Day-0 private ECR seed repository URLs"
+}

@@ -1,9 +1,20 @@
-output "registry_url" {
-  description = "URL of the internal container registry"
-  value       = "https://${var.registry_domain}"
+output "repository_arns" {
+  description = "Map of all provisioned ECR repository names to their ARNs"
+  value = {
+    for k, v in aws_ecr_repository.bootstrap : k => v.arn
+  }
 }
 
-output "namespace" {
-  description = "Namespace where Harbor is deployed"
-  value       = kubernetes_namespace.harbor.metadata[0].name
+output "repository_urls" {
+  description = "Map of all provisioned ECR repository names to their repository URLs"
+  value = {
+    for k, v in aws_ecr_repository.bootstrap : k => v.repository_url
+  }
+}
+
+output "repository_registry_ids" {
+  description = "Registry IDs for the provisioned repositories"
+  value = {
+    for k, v in aws_ecr_repository.bootstrap : k => v.registry_id
+  }
 }

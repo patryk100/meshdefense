@@ -1,49 +1,28 @@
 variable "environment" {
+  description = "Target deployment environment name (e.g. dev, test, stg, prod, poc-minimal)"
   type        = string
-  description = "Environment name (dev, test, stg, prod)"
 }
 
-variable "namespace" {
+variable "kms_key_arn" {
+  description = "Optional Customer Managed KMS Key ARN for ECR repository encryption. Defaults to AWS managed AES-256 if empty."
   type        = string
-  default     = "harbor"
-  description = "Namespace to install Harbor"
+  default     = null
 }
 
-variable "registry_domain" {
+variable "additional_repositories" {
+  description = "Additional private ECR repository names to create for application or platform workloads"
+  type        = list(string)
+  default     = []
+}
+
+variable "image_tag_mutability" {
+  description = "The tag mutability setting for the repository. Must be one of: MUTABLE or IMMUTABLE"
   type        = string
-  description = "Internal FQDN for the registry, e.g. registry.il6.meshdefense.internal"
+  default     = "MUTABLE"
 }
 
-variable "harbor_chart_path" {
-  type        = string
-  default     = "harbor"
-  description = "Local path or internal Helm repo chart name for Harbor"
-}
-
-variable "harbor_chart_version" {
-  type    = string
-  default = "1.14.0"
-}
-
-variable "tls_secret_name" {
-  type        = string
-  default     = "harbor-tls"
-  description = "Secret name containing the internal CA-signed TLS certificate"
-}
-
-variable "storage_type" {
-  type        = string
-  default     = "s3"
-  description = "Storage backend for images: s3, azure, gcs, or filesystem"
-}
-
-variable "storage_bucket" {
-  type        = string
-  default     = ""
-  description = "S3/GCS bucket or Azure container for image storage"
-}
-
-variable "storage_region" {
-  type    = string
-  default = ""
+variable "tags" {
+  description = "Tags to attach to all provisioned ECR repositories"
+  type        = map(string)
+  default     = {}
 }
