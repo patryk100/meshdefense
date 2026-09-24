@@ -78,11 +78,14 @@ module "kubernetes" {
 module "bastion" {
   source = "../../modules/bastion-jumpbox"
 
-  environment = "dev"
-  ami_id      = var.bastion_ami_id
-  subnet_id   = var.private_subnet_ids[0]
-  vpc_id      = var.vpc_id
-  vpc_cidr    = var.vpc_cidr
-  kms_key_arn = module.kms_keyring.ebs_key_arn
+  environment      = "dev"
+  ami_id           = var.bastion_ami_id
+  subnet_id        = var.private_subnet_ids[0]
+  vpc_id           = var.vpc_id
+  vpc_cidr         = var.vpc_cidr
+  ebs_kms_key_arn  = module.kms_keyring.ebs_key_arn
+  s3_kms_key_arn   = module.kms_keyring.s3_key_arn
+  logs_kms_key_arn = module.kms_keyring.secrets_key_arn # or dedicated logs key
 }
+
 

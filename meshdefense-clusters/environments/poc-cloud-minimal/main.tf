@@ -118,3 +118,27 @@ module "kubernetes" {
     Cluster = "meshdefense-${var.environment}-minimal"
   }
 }
+
+# --------------------------------------------------------------------------------------------------
+# 5. Day-0 Ephemeral Administrative Bastion & SSM Session Manager (Story 1.3)
+# --------------------------------------------------------------------------------------------------
+module "bastion" {
+  count  = var.enable_bastion ? 1 : 0
+  source = "../../modules/bastion-jumpbox"
+
+  environment      = var.environment
+  instance_type    = var.bastion_instance_type
+  subnet_id        = module.vpc.private_subnet_ids[0]
+  vpc_id           = module.vpc.vpc_id
+  vpc_cidr         = module.vpc.vpc_cidr
+  ebs_kms_key_arn  = module.kms_keyring.ebs_key_arn
+  s3_kms_key_arn   = module.kms_keyring.s3_key_arn
+  logs_kms_key_arn = module.kms_network.key_arn
+  root_volume_size = 30 # Cost-effective size for minimal poc testing
+
+  tags = {
+    Role       = "Day-0-Bootstrap-Bastion"
+    Compliance = "NIST-800-53-AC-3_AC-4_SC-7_SC-13"
+  }
+}
+

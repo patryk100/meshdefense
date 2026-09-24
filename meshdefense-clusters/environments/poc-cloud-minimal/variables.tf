@@ -33,3 +33,16 @@ variable "kubernetes_version" {
   default     = "1.30"
   description = "Kubernetes version for EKS"
 }
+
+variable "enable_bastion" {
+  type        = bool
+  default     = true
+  description = "Toggle to deploy the Day-0 ephemeral administrative bastion"
+}
+
+variable "bastion_instance_type" {
+  type        = string
+  default     = "t3.small"
+  description = "Instance type for the ephemeral administrative bastion"
+}
+

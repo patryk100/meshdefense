@@ -76,3 +76,34 @@ output "all_kms_key_arns" {
   description = "Map of all 6 dedicated cryptographic domain KMS key ARNs"
 }
 
+output "bastion_instance_id" {
+  value       = try(module.bastion[0].bastion_instance_id, null)
+  description = "EC2 instance ID for Day-0 ephemeral bastion"
+}
+
+output "bastion_private_ip" {
+  value       = try(module.bastion[0].bastion_private_ip, null)
+  description = "Private IP address of the Day-0 bastion"
+}
+
+output "bastion_security_group_id" {
+  value       = try(module.bastion[0].bastion_security_group_id, null)
+  description = "Security group ID of the Day-0 bastion (zero ingress)"
+}
+
+output "bastion_ssm_connect_command" {
+  value       = try(module.bastion[0].ssm_connect_command, null)
+  description = "AWS CLI SSM Session Manager connect command"
+}
+
+output "bastion_ssm_logs_cloudwatch" {
+  value       = try(module.bastion[0].cloudwatch_log_group_name, null)
+  description = "CloudWatch log group recording encrypted SSM sessions"
+}
+
+output "bastion_ssm_logs_s3" {
+  value       = try(module.bastion[0].s3_bucket_name, null)
+  description = "S3 bucket recording encrypted SSM sessions"
+}
+
+

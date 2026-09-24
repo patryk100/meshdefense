@@ -30,6 +30,7 @@ resource "aws_route53_zone" "internal" {
 locals {
   services = [
     "ec2",
+    "ec2messages",
     "ecr.api",
     "ecr.dkr",
     "kms",
@@ -40,6 +41,7 @@ locals {
     "logs"
   ]
 }
+
 
 resource "aws_security_group" "vpc_endpoints" {
   name        = "${var.environment}-vpc-endpoints-sg"

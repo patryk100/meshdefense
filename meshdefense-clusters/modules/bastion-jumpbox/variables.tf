@@ -1,35 +1,58 @@
 variable "environment" {
-  type = string
+  type        = string
+  description = "Environment identifier (e.g., poc-minimal, dev, prod)"
 }
 
 variable "ami_id" {
   type        = string
-  description = "AMI ID (RHEL / AL2 DISA STIG hardened AMI)"
+  default     = null
+  description = "Optional AMI ID (e.g. DISA STIG hardened AMI). If null, latest Amazon Linux 2023 is looked up."
 }
 
 variable "instance_type" {
-  type    = string
-  default = "m6i.xlarge"
+  type        = string
+  default     = "t3.small"
+  description = "EC2 instance type for administrative bastion"
 }
 
 variable "subnet_id" {
-  type = string
+  type        = string
+  description = "Private management subnet ID where the bastion is placed"
 }
 
 variable "vpc_id" {
-  type = string
+  type        = string
+  description = "VPC ID where the bastion is hosted"
 }
 
 variable "vpc_cidr" {
-  type = string
+  type        = string
+  description = "VPC CIDR block for internal routing"
 }
 
-variable "kms_key_arn" {
+variable "ebs_kms_key_arn" {
   type        = string
-  description = "KMS CMK ARN for EBS encryption"
+  description = "KMS Customer Managed Key ARN for EBS volume encryption"
+}
+
+variable "s3_kms_key_arn" {
+  type        = string
+  description = "KMS Customer Managed Key ARN for S3 session log encryption"
+}
+
+variable "logs_kms_key_arn" {
+  type        = string
+  description = "KMS Customer Managed Key ARN for CloudWatch session log encryption"
+}
+
+variable "root_volume_size" {
+  type        = number
+  default     = 50
+  description = "Size of root volume in GB (cost-conscious default for minimal, can scale to 200 for Big Bang)"
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  type        = map(string)
+  default     = {}
+  description = "Resource tags"
 }
