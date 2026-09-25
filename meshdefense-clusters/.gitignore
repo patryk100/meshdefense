@@ -26,3 +26,5 @@ terraform.rc
 # Plan files
 *.plan
 tfplan
+.terraform/
+tfplan*.binary
