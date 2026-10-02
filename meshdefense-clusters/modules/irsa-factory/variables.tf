@@ -223,7 +223,28 @@ variable "flux_kms_key_arns" {
 }
 
 # --------------------------------------------------------------------------------------------------
-# 7. Extensible Custom IRSA Roles Factory Map
+# 7. AWS Load Balancer Controller (Story 3.2 - Air-Gapped NLB Provisioning)
+# --------------------------------------------------------------------------------------------------
+variable "enable_aws_load_balancer_controller" {
+  description = "Whether to provision the IRSA role for AWS Load Balancer Controller"
+  type        = bool
+  default     = true
+}
+
+variable "aws_load_balancer_controller_namespace" {
+  description = "Kubernetes namespace where AWS Load Balancer Controller runs"
+  type        = string
+  default     = "kube-system"
+}
+
+variable "aws_load_balancer_controller_service_account" {
+  description = "Kubernetes service account name for AWS Load Balancer Controller"
+  type        = string
+  default     = "aws-load-balancer-controller"
+}
+
+# --------------------------------------------------------------------------------------------------
+# 8. Extensible Custom IRSA Roles Factory Map
 # --------------------------------------------------------------------------------------------------
 variable "custom_roles" {
   description = "Map of custom IRSA roles to dynamically provision"

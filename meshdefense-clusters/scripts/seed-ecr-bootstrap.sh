@@ -84,6 +84,9 @@ declare -a BOOTSTRAP_IMAGES=(
   "ghcr.io/fluxcd/notification-controller:v1.4.0|fluxcd/notification-controller:v1.4.0"
   "ghcr.io/fluxcd/image-automation-controller:v0.39.0|fluxcd/image-automation-controller:v0.39.0"
   "ghcr.io/fluxcd/image-reflector-controller:v0.33.0|fluxcd/image-reflector-controller:v0.33.0"
+
+  # ── AWS Load Balancer Controller (Story 3.2) ─────────────────────────────
+  "${EKS_ECR_REGISTRY}/amazon/aws-load-balancer-controller:v2.8.2|amazon/aws-load-balancer-controller:v2.8.2"
 )
 
 TOTAL="${#BOOTSTRAP_IMAGES[@]}"
@@ -101,8 +104,8 @@ for entry in "${BOOTSTRAP_IMAGES[@]}"; do
   echo -e "\n[${COUNT}/${TOTAL}] ${YELLOW}${UPSTREAM_IMAGE}${NC}"
   echo -e "         → ${GREEN}${TARGET_ECR_IMAGE}${NC}"
 
-  # Pull upstream image
-  if ! docker pull "${UPSTREAM_IMAGE}" --quiet; then
+  # Pull upstream image (enforce linux/amd64 for cluster worker node compatibility)
+  if ! docker pull --platform linux/amd64 "${UPSTREAM_IMAGE}" --quiet; then
     echo -e "${RED}[!] FAIL: could not pull ${UPSTREAM_IMAGE}${NC}"
     FAILED=$((FAILED + 1))
     FAILED_IMAGES+=("${TARGET_REPO_TAG}")

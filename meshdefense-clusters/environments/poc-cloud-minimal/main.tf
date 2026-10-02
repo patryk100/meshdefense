@@ -187,7 +187,7 @@ module "rds" {
   ]
 
   # Cost-conscious minimal sizing for validation
-  instance_class        = "db.t4g.micro"
+  instance_class        = "db.t4g.small"
   allocated_storage     = 20
   max_allocated_storage = 50
   multi_az              = var.rds_multi_az
@@ -239,6 +239,9 @@ module "irsa_factory" {
   enable_flux       = true
   flux_s3_bucket_arns = [module.s3_storage.bucket_arns["harbor"]]
   flux_kms_key_arns   = [module.kms_keyring.s3_key_arn, module.kms_keyring.secrets_key_arn]
+
+  # 7. AWS Load Balancer Controller (Story 3.2 - Air-Gapped NLB Provisioning)
+  enable_aws_load_balancer_controller = true
 
   tags = {
     Role       = "IRSA-ServiceAccounts"

@@ -172,6 +172,9 @@ module "irsa_factory" {
   flux_s3_bucket_arns = [module.s3_storage.bucket_arns["harbor"]]
   flux_kms_key_arns   = [module.kms_keyring.s3_key_arn, module.kms_keyring.secrets_key_arn]
 
+  # 7. AWS Load Balancer Controller (Story 3.2 - Air-Gapped NLB Provisioning)
+  enable_aws_load_balancer_controller = true
+
   tags = {
     Role       = "IRSA-ServiceAccounts"
     Compliance = "DoD-IL6,NIST-800-53-AC-3_AC-6_SC-12_SC-13"

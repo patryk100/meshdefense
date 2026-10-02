@@ -630,7 +630,220 @@ resource "aws_iam_role_policy_attachment" "flux" {
 }
 
 # --------------------------------------------------------------------------------------------------
-# 7. Extensible Dynamic Custom IRSA Roles Factory
+# 7. AWS Load Balancer Controller (Story 3.2 - Air-Gapped Internal NLB Provisioning)
+# --------------------------------------------------------------------------------------------------
+data "aws_iam_policy_document" "aws_load_balancer_controller_assume" {
+  count = var.enable_aws_load_balancer_controller ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [var.oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_issuer}:sub"
+      values   = ["system:serviceaccount:${var.aws_load_balancer_controller_namespace}:${var.aws_load_balancer_controller_service_account}"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_issuer}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  count = var.enable_aws_load_balancer_controller ? 1 : 0
+
+  name                 = "${var.cluster_name}-irsa-aws-load-balancer-controller"
+  description          = "Least-privilege IRSA role for AWS Load Balancer Controller on ${var.cluster_name}"
+  assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_assume[0].json
+  permissions_boundary = var.permissions_boundary_arn
+
+  tags = merge(var.tags, {
+    Name           = "${var.cluster_name}-irsa-aws-load-balancer-controller"
+    Role           = "AWS-Load-Balancer-Controller"
+    Namespace      = var.aws_load_balancer_controller_namespace
+    ServiceAccount = var.aws_load_balancer_controller_service_account
+  })
+}
+
+data "aws_iam_policy_document" "aws_load_balancer_controller" {
+  count = var.enable_aws_load_balancer_controller ? 1 : 0
+
+  # Read-only network inspection
+  statement {
+    sid    = "EC2DescribeNetwork"
+    effect = "Allow"
+    actions = [
+      "iam:CreateServiceLinkedRole",
+      "ec2:DescribeAccountAttributes",
+      "ec2:DescribeAddresses",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeInternetGateways",
+      "ec2:DescribeVpcs",
+      "ec2:DescribeVpcPeeringConnections",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeInstances",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeTags",
+      "ec2:GetCoipPoolUsage",
+      "ec2:DescribeCoipPools",
+      "ec2:GetSecurityGroupsForVpc"
+    ]
+    resources = ["*"]
+  }
+
+  # ELBv2 describe operations
+  statement {
+    sid    = "ELBv2Describe"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeLoadBalancerAttributes",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeListenerCertificates",
+      "elasticloadbalancing:DescribeSSLPolicies",
+      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTargetGroupAttributes",
+      "elasticloadbalancing:DescribeTargetHealth",
+      "elasticloadbalancing:DescribeTags",
+      "elasticloadbalancing:DescribeTrustStores"
+    ]
+    resources = ["*"]
+  }
+
+  # Security Group management for load balancers
+  statement {
+    sid    = "EC2ManageSecurityGroups"
+    effect = "Allow"
+    actions = [
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:CreateSecurityGroup"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "EC2ManageSecurityGroupRules"
+    effect = "Allow"
+    actions = [
+      "ec2:CreateTags",
+      "ec2:DeleteTags"
+    ]
+    resources = ["arn:${local.partition}:ec2:*:*:security-group/*"]
+    condition {
+      test     = "Null"
+      variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
+      values   = ["false"]
+    }
+  }
+
+  statement {
+    sid    = "EC2DeleteSecurityGroup"
+    effect = "Allow"
+    actions = [
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:DeleteSecurityGroup"
+    ]
+    resources = ["arn:${local.partition}:ec2:*:*:security-group/*"]
+    condition {
+      test     = "Null"
+      variable = "ec2:ResourceTag/elbv2.k8s.aws/cluster"
+      values   = ["false"]
+    }
+  }
+
+  # ELB Management (NLB / ALB)
+  statement {
+    sid    = "ELBv2ManageLoadBalancers"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:CreateLoadBalancer",
+      "elasticloadbalancing:CreateTargetGroup"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "Null"
+      variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
+      values   = ["false"]
+    }
+  }
+
+  statement {
+    sid    = "ELBv2ManageListeners"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:CreateListener",
+      "elasticloadbalancing:DeleteListener",
+      "elasticloadbalancing:CreateRule",
+      "elasticloadbalancing:DeleteRule"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ELBv2ModifyResources"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:AddTags",
+      "elasticloadbalancing:RemoveTags",
+      "elasticloadbalancing:ModifyLoadBalancerAttributes",
+      "elasticloadbalancing:SetIpAddressType",
+      "elasticloadbalancing:SetSecurityGroups",
+      "elasticloadbalancing:SetSubnets",
+      "elasticloadbalancing:DeleteLoadBalancer",
+      "elasticloadbalancing:ModifyTargetGroup",
+      "elasticloadbalancing:ModifyTargetGroupAttributes",
+      "elasticloadbalancing:DeleteTargetGroup",
+      "elasticloadbalancing:RegisterTargets",
+      "elasticloadbalancing:DeregisterTargets",
+      "elasticloadbalancing:SetWebAcl"
+    ]
+    resources = ["*"]
+  }
+
+  # Certificate & Shield/WAF
+  statement {
+    sid    = "CognitoShieldWAF"
+    effect = "Allow"
+    actions = [
+      "acm:ListCertificates",
+      "acm:DescribeCertificate"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  count = var.enable_aws_load_balancer_controller ? 1 : 0
+
+  name        = "${var.cluster_name}-irsa-aws-lb-controller-policy"
+  description = "IAM policy for AWS Load Balancer Controller to manage internal NLBs and target groups on ${var.cluster_name}"
+  policy      = data.aws_iam_policy_document.aws_load_balancer_controller[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  count = var.enable_aws_load_balancer_controller ? 1 : 0
+
+  role       = aws_iam_role.aws_load_balancer_controller[0].name
+  policy_arn = aws_iam_policy.aws_load_balancer_controller[0].arn
+}
+
+# --------------------------------------------------------------------------------------------------
+# 8. Extensible Dynamic Custom IRSA Roles Factory
 # --------------------------------------------------------------------------------------------------
 resource "aws_iam_role" "custom" {
   for_each = var.custom_roles

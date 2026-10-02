@@ -204,6 +204,8 @@ resource "aws_eks_access_policy_association" "admin_roles" {
   access_scope {
     type = "cluster"
   }
+
+  depends_on = [aws_eks_access_entry.admin_roles]
 }
 
 # --------------------------------------------------------------------------------------------------

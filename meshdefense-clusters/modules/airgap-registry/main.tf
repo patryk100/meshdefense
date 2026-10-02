@@ -49,6 +49,9 @@ locals {
     "goharbor/trivy-adapter-photon",
     "goharbor/harbor-jobservice",
 
+    # AWS Load Balancer Controller (Story 3.2 - Air-Gapped NLB Provisioning)
+    "amazon/aws-load-balancer-controller",
+
     # Airgap OCI packages
     "meshdefense/charts"
   ]

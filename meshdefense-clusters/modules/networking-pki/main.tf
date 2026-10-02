@@ -43,7 +43,8 @@ locals {
     "secretsmanager",
     "sqs",
     "eks",
-    "eks-auth"
+    "eks-auth",
+    "elasticloadbalancing"
   ]
 }
 

@@ -54,5 +54,10 @@ output "irsa_service_account_annotations" {
   description = "Map of ServiceAccount annotations (eks.amazonaws.com/role-arn) ready for Helm/K8s manifests"
 }
 
+output "irsa_aws_load_balancer_controller_role_arn" {
+  value       = module.irsa_factory.aws_load_balancer_controller_role_arn
+  description = "IAM Role ARN for AWS Load Balancer Controller"
+}
+
 
 
