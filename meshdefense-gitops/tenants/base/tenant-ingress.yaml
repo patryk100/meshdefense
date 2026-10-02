@@ -1,0 +1,38 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tenant-ingress-cert
+  namespace: istio-system
+spec:
+  secretName: tenant-ingress-cert
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: meshdefense-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - "tenant.apps.internal"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: tenant-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https-tenant
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: tenant-ingress-cert
+      hosts:
+        - "tenant.apps.internal"

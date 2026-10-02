@@ -1,0 +1,32 @@
+# ==============================================================================
+# MeshDefense Tenant Customization Specification: platform-core
+# Parameterizes tenant DNS, ingress TLS certificate, and resource limits
+# ==============================================================================
+tenant:
+  name: "platform-core"
+  description: "Core platform shared services tenant (Keycloak, Vault, GitLab, SonarQube)"
+  domain: "core.apps.meshdefense.internal"
+  environment: "prod"
+  
+  resources:
+    requests:
+      cpu: "16"
+      memory: "32Gi"
+    limits:
+      cpu: "32"
+      memory: "64Gi"
+    pods: "100"
+    services: "40"
+    
+  ingress:
+    enabled: true
+    issuer: "meshdefense-cluster-issuer"
+    hosts:
+      - "core.apps.meshdefense.internal"
+      - "*.core.apps.meshdefense.internal"
+    tls_secret_name: "platform-core-ingress-cert"
+    
+  security:
+    mtls_mode: "STRICT"
+    network_isolation: true
+    pod_security_standard: "restricted"

@@ -1,0 +1,87 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+namespace: mission-analytics
+
+patches:
+  - target:
+      kind: Namespace
+      name: tenant-template
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: mission-analytics
+  - target:
+      kind: ResourceQuota
+      name: tenant-compute-quota
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: mission-analytics
+      - op: replace
+        path: /spec/hard/requests.cpu
+        value: "32"
+      - op: replace
+        path: /spec/hard/requests.memory
+        value: "64Gi"
+      - op: replace
+        path: /spec/hard/limits.cpu
+        value: "64"
+      - op: replace
+        path: /spec/hard/limits.memory
+        value: "128Gi"
+      - op: replace
+        path: /spec/hard/pods
+        value: "150"
+  - target:
+      kind: LimitRange
+      name: tenant-limits
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: mission-analytics
+  - target:
+      kind: NetworkPolicy
+      name: tenant-isolation-policy
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: mission-analytics
+  - target:
+      kind: PeerAuthentication
+      name: default
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: mission-analytics
+  - target:
+      kind: Certificate
+      name: tenant-ingress-cert
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: mission-analytics-ingress-cert
+      - op: replace
+        path: /spec/secretName
+        value: mission-analytics-ingress-cert
+      - op: replace
+        path: /spec/dnsNames
+        value:
+          - "hosts"
+  - target:
+      kind: Gateway
+      name: tenant-gateway
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: mission-analytics-gateway
+      - op: replace
+        path: /spec/servers/0/tls/credentialName
+        value: mission-analytics-ingress-cert
+      - op: replace
+        path: /spec/servers/0/hosts
+        value:
+          - "hosts"

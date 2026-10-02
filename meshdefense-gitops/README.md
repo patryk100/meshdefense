@@ -79,3 +79,47 @@ sops --encrypt --kms "arn:aws-us-gov:kms:us-gov-west-1:123456789012:key/..." \
 ```
 
 Flux v2 decrypts these secrets at reconciliation time using the cluster's IAM role / KMS key permissions.
+
+---
+
+## Story 4.2: Hierarchical Kustomize Overlays & Tenant Customization Engine
+
+MeshDefense enforces a 3-tier hierarchical Kustomize overlay structure:
+`Base` $\rightarrow$ `Environment` $\rightarrow$ `Tenant`
+
+```
+meshdefense-gitops/
+├── base/                   # Immutable security baselines (mTLS STRICT, Kyverno, NeuVector, Monitoring)
+├── environments/           # Environment-level HA, replica sizing, and SOPS encrypted secrets
+└── tenants/                # Tenant overlays parameterizing DNS, ingress certificates, and resource quotas
+    ├── base/               # Reusable tenant template (Quota, Limits, NetworkPolicy, PeerAuth, Cert, Gateway)
+    ├── platform-core/      # Tenant overlay for Keycloak, Vault, GitLab, SonarQube
+    └── mission-analytics/  # Tenant overlay for Mission Data Science & Analytics workloads
+```
+
+### Parameterizing Tenants via Single YAML
+To deploy a new tenant while preserving immutable security baselines, declare a single `tenant-values.yaml`:
+
+```yaml
+tenant:
+  name: "mission-analytics"
+  domain: "analytics.apps.meshdefense.internal"
+  resources:
+    requests: { cpu: "32", memory: "64Gi" }
+    limits: { cpu: "64", memory: "128Gi" }
+    pods: "150"
+  ingress:
+    hosts:
+      - "analytics.apps.meshdefense.internal"
+      - "*.analytics.apps.meshdefense.internal"
+    tls_secret_name: "mission-analytics-ingress-cert"
+```
+
+Generate and validate the tenant overlay:
+```bash
+python3 meshdefense-gitops/scripts/tenant-customization-engine.py \
+  --values meshdefense-gitops/tenants/mission-analytics/tenant-values.yaml \
+  --output-dir meshdefense-gitops/tenants/mission-analytics
+
+kubectl kustomize meshdefense-gitops/tenants/mission-analytics
+```

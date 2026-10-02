@@ -1,0 +1,32 @@
+# ==============================================================================
+# MeshDefense Tenant Customization Specification: mission-analytics
+# Parameterizes tenant DNS, ingress TLS certificate, and resource limits
+# ==============================================================================
+tenant:
+  name: "mission-analytics"
+  description: "Mission Analytics and Data Science Tenant"
+  domain: "analytics.apps.meshdefense.internal"
+  environment: "prod"
+  
+  resources:
+    requests:
+      cpu: "32"
+      memory: "64Gi"
+    limits:
+      cpu: "64"
+      memory: "128Gi"
+    pods: "150"
+    services: "30"
+    
+  ingress:
+    enabled: true
+    issuer: "meshdefense-cluster-issuer"
+    hosts:
+      - "analytics.apps.meshdefense.internal"
+      - "*.analytics.apps.meshdefense.internal"
+    tls_secret_name: "mission-analytics-ingress-cert"
+    
+  security:
+    mtls_mode: "STRICT"
+    network_isolation: true
+    pod_security_standard: "restricted"
