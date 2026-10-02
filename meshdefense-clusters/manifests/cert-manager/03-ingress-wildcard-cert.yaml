@@ -1,0 +1,28 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: istio-ingressgateway-certs
+  namespace: istio-system
+spec:
+  secretName: istio-ingressgateway-certs
+  duration: 2160h    # 90 days
+  renewBefore: 720h  # Rotate 30 days prior to expiration (NIST / DoD SC-12 requirement)
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - "*.apps.poc-minimal.il6.meshdefense.internal"
+    - "*.apps.dev.il6.meshdefense.internal"
+    - "*.apps.test.il6.meshdefense.internal"
+    - "*.apps.stg.il6.meshdefense.internal"
+    - "*.apps.prod.il6.meshdefense.internal"
+    - "poc-minimal.il6.meshdefense.internal"
+    - "*.poc-minimal.il6.meshdefense.internal"
+  issuerRef:
+    name: meshdefense-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
