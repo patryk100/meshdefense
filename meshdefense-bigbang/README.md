@@ -28,7 +28,10 @@ meshdefense-bigbang/
 │   └── templates/
 │       ├── _helpers.tpl
 │       └── bigbang-packages.yaml # Helm template generating package HelmReleases
+├── keys/
+│   └── ironbank.pub            # DoD Platform One Iron Bank Cosign ECDSA public key
 ├── scripts/
+│   ├── artifact-harvester.py   # DoD IL6 Harvester CLI & OCI Air-Gap Sync Pipeline (Story 4.1)
 │   ├── mirror-bigbang.sh       # Mirror upstream Repo One git & charts to airgap bundle
 │   ├── vendor-dependencies.sh  # Download all subchart .tgz files for 100% offline installs
 │   └── verify-signatures.sh    # Cosign validation with DoD P1 public keys
@@ -38,20 +41,27 @@ meshdefense-bigbang/
 
 ---
 
-## Mirroring Workflow (Low-Side to High-Side)
+## Story 4.1: Automated Air-Gap Harvester & OCI Sync Pipeline
 
-### 1. Low-Side Export (Internet-Connected Machine)
+The unified [`artifact-harvester.py`](file:///Users/patrykp/Projects/MeshDefense/meshdefense-bigbang/scripts/artifact-harvester.py) utility automates the end-to-end low-side export and high-side import process, strictly validating Cosign signatures and encrypting the bundle with AES-256-CBC PBKDF2.
+
+### 1. Low-Side Harvest (Internet-Connected Pipeline)
 ```bash
-cd scripts
-./mirror-bigbang.sh --tag 2.46.0 --export-dir /path/to/transfer-media
-./vendor-dependencies.sh
+python3 meshdefense-bigbang/scripts/artifact-harvester.py harvest \
+  --matrix meshdefense-bigbang/versions/release-matrix.yaml \
+  --bigbang-version 3.30.0 \
+  --images-file meshdefense-apps/images/ironbank-images.txt \
+  --chart-dir meshdefense-bigbang/chart \
+  --output /transfer/meshdefense-airgap-bundle.tar.gz.enc \
+  --encrypt-pass "DiodePassphrase2026!"
 ```
 
-### 2. High-Side Ingest (Air-Gapped IL6 Bastion)
+### 2. High-Side Air-Gap Ingest (Disconnected IL6 Bastion)
 ```bash
-# Verify Cosign signatures
-./verify-signatures.sh --bundle /media/transfer/bigbang-2.46.0.tar.gz
-
-# Push chart to internal Harbor OCI registry
-helm push chart/ oci://registry.il6.meshdefense.internal/bigbang/
+python3 meshdefense-bigbang/scripts/artifact-harvester.py ingest \
+  --bundle /transfer/meshdefense-airgap-bundle.tar.gz.enc \
+  --decrypt-pass "DiodePassphrase2026!" \
+  --registry registry.il6.meshdefense.internal \
+  --project ironbank
 ```
+
