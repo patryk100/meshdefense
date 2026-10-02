@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: harbor
+
+resources:
+  - 01-harbor-s3-irsa-secret.yaml
+  - 02-kyverno-harbor-cosign-policy.yaml
+  - 03-harbor-oidc-keycloak.yaml
+  - 04-harbor-project-security-policy.yaml

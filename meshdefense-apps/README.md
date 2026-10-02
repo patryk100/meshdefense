@@ -51,3 +51,19 @@ Run from the high-side air-gap bastion:
 ```bash
 ./airgap-image-sync.sh --mode import --archive /media/transfer/meshdefense-images.tar --registry registry.il6.meshdefense.internal
 ```
+
+---
+
+## Story 4.3: Hardened Harbor Registry (S3 Backend, Keycloak OIDC & Cosign)
+
+Harbor is configured as the immutable, high-side source of truth:
+- **Storage Backend**: AWS S3 with SSE-KMS storage encryption and `disableredirect: true` to force VPC interface endpoints.
+- **Identity Provider**: Keycloak OIDC federation (`realm: baby-yoda`, group mapping to `platform-administrators`).
+- **Scanning Engine**: In-cluster Trivy vulnerability scanner operating in offline mode.
+- **Signature Admission Gate**: Kyverno `ClusterPolicy` requiring Cosign signatures on all admitted images from Iron Bank.
+
+To deploy or update:
+```bash
+meshdefense-clusters/scripts/deploy-hardened-harbor.sh
+```
+

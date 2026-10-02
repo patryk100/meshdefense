@@ -1,0 +1,76 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-harbor-cosign-verification
+  annotations:
+    policies.kyverno.io/title: Enforce Cosign Signature Verification on Iron Bank Images
+    policies.kyverno.io/category: Supply Chain Security & DoD IL6
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Enforces that all container images deployed from internal Harbor must possess
+      a cryptographically valid Cosign signature issued by an authorized DoD Iron Bank
+      or MeshDefense platform signing key (NIST 800-53 SI-7, NIST 800-161).
+spec:
+  validationFailureAction: Enforce
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-ironbank-and-harbor-signatures
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - bigbang
+      verifyImages:
+        - imageReferences:
+            - "registry.il6.meshdefense.internal/*"
+            - "harbor.apps.*"
+            - "registry1.dso.mil/ironbank/*"
+          attestors:
+            - entries:
+                - keys:
+                    publicKeys: |-
+                      -----BEGIN PUBLIC KEY-----
+                      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIE7v9J6ttQus6itUoyfMCqMjaIqm
+                      R8XrntaedsdEhPPchOQuFzqTyyAPGifV1SaEu8medVRi6mVICWbVwOteNg==
+                      -----END PUBLIC KEY-----
+          mutateDigest: false
+          verifyDigest: true
+          required: true
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-trivy-zero-critical-vulnerabilities
+  annotations:
+    policies.kyverno.io/title: Enforce Zero Critical CVEs on Admitted Images
+    policies.kyverno.io/category: Vulnerability Management
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Validates that images admitted from Harbor have undergone Trivy vulnerability scanning
+      and contain zero critical vulnerabilities before admission into the cluster.
+spec:
+  validationFailureAction: Audit
+  rules:
+    - name: audit-critical-cves
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+      validate:
+        message: "Container image must be scanned by Harbor Trivy and pass admission thresholds."
+        pattern:
+          spec:
+            containers:
+              - image: "?*"

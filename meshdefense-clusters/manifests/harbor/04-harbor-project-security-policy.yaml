@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-security-scan-policy
+  namespace: harbor
+data:
+  project_security_rules.json: |
+    {
+      "project_name": "ironbank",
+      "metadata": {
+        "public": "true",
+        "enable_content_trust": "true",
+        "enable_content_trust_cosign": "true",
+        "auto_scan": "true",
+        "severity": "critical",
+        "prevent_vul": "true"
+      },
+      "cve_allowlist": {
+        "items": [],
+        "expires_at": null
+      }
+    }

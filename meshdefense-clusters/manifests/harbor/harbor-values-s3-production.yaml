@@ -1,0 +1,141 @@
+# ==============================================================================
+# MeshDefense: Hardened Production Harbor Values with S3 Backend,
+# Keycloak OIDC SSO, and Automated Trivy Vulnerability Scanning
+# DoD Impact Level 6 (IL6) & NIST 800-53 (SC-8, SC-12, SC-13, SI-2, SI-7)
+# ==============================================================================
+
+expose:
+  type: clusterIP
+  tls:
+    enabled: false # TLS terminated at Istio Perimeter Gateway with Cert-Manager cert
+
+externalURL: https://harbor.apps.poc-minimal.il6.meshdefense.internal
+
+# ------------------------------------------------------------------------------
+# 1. AWS S3 Storage Backend with SSE-KMS Encryption (NIST 800-53 SC-13, SC-28)
+# ------------------------------------------------------------------------------
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  imageChartStorage:
+    type: s3
+    disableredirect: true # Enforce all blob transfers proxy through private VPC endpoints
+    s3:
+      region: us-east-1
+      bucket: meshdefense-poc-minimal-harbor-blobs
+      # For air-gapped AWS VPC: using in-cluster STS/IRSA or private S3 endpoint
+      regionendpoint: https://s3.us-east-1.amazonaws.com
+      encrypt: true
+      secure: true
+      v4auth: true
+      storageclass: STANDARD
+
+# ------------------------------------------------------------------------------
+# 2. Keycloak OIDC Single Sign-On Integration (NIST 800-53 IA-2, IA-5)
+# ------------------------------------------------------------------------------
+# Automatically configures Harbor Core to federate authentication with Keycloak
+# Realm: baby-yoda / meshdefense
+# Endpoint: https://keycloak.apps.poc-minimal.il6.meshdefense.internal/auth/realms/baby-yoda
+oidc:
+  name: "Keycloak-SSO"
+  endpoint: "https://keycloak.apps.poc-minimal.il6.meshdefense.internal/auth/realms/baby-yoda"
+  clientID: "harbor-sso"
+  clientSecret: "MeshDefenseKeycloakHarborSecret2026!"
+  scope: "openid,profile,email,groups"
+  verifyCert: false # In airgap enclave, CA is validated by cluster trust-store
+  autoOnboard: true
+  userClaim: "preferred_username"
+  groupsClaim: "groups"
+  adminGroup: "platform-administrators"
+
+# ------------------------------------------------------------------------------
+# 3. Trivy Vulnerability Scanner (NIST 800-53 SI-2 Flaw Remediation, RA-5)
+# ------------------------------------------------------------------------------
+trivy:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  settings:
+    vulnType: "os,library"
+    severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+    ignoreUnfixed: false
+    # Air-gapped offline vulnerability database location
+    offlineScan: true
+    githubToken: ""
+
+# ------------------------------------------------------------------------------
+# 4. Core, Registry, and Jobservice Configuration
+# ------------------------------------------------------------------------------
+core:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  secret: "MeshDefenseHarborCoreSecret2026!"
+  xsrfKey: "MeshDefenseHarborXsrfKey2026!"
+
+registry:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  secret: "MeshDefenseHarborRegistrySecret2026!"
+
+portal:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+jobservice:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  secret: "MeshDefenseHarborJobserviceSecret2026!"
+
+# ------------------------------------------------------------------------------
+# 5. External Managed RDS PostgreSQL (Platform State Architecture - Story 1.5)
+# ------------------------------------------------------------------------------
+database:
+  type: external
+  external:
+    host: "postgres.il6.meshdefense.internal"
+    port: 5432
+    username: "harbor_user"
+    password: "MeshDefenseRdsHarborPassword2026!"
+    coreDatabase: "harbor_core"
+    sslmode: "require" # NIST 800-53 SC-8 TLS enforcement
+
+redis:
+  type: internal
+  internal:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
