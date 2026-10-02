@@ -43,6 +43,10 @@ module "networking" {
   route_table_ids = var.route_table_ids
   internal_domain = "test.il6.meshdefense.internal"
 
+  enable_ingress_dns_alias = var.enable_ingress_dns_alias
+  ingress_nlb_dns_name     = var.ingress_nlb_dns_name
+  ingress_nlb_zone_id      = var.ingress_nlb_zone_id
+
   tags = {
     Compliance = "DoD-IL6,NIST-800-53-SC-7"
   }

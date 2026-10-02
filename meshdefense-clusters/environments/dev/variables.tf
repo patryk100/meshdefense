@@ -32,3 +32,21 @@ variable "bastion_ami_id" {
   type        = string
   description = "Hardened AMI ID for bastion"
 }
+
+variable "enable_ingress_dns_alias" {
+  type        = bool
+  default     = false
+  description = "Enable Route 53 wildcard DNS alias pointing to ingress NLB"
+}
+
+variable "ingress_nlb_dns_name" {
+  type        = string
+  default     = null
+  description = "DNS name of internal NLB"
+}
+
+variable "ingress_nlb_zone_id" {
+  type        = string
+  default     = null
+  description = "Zone ID of internal NLB"
+}

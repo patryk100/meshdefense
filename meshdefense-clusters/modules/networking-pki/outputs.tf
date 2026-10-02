@@ -22,3 +22,13 @@ output "s3_endpoint_id" {
   description = "ID of the S3 Gateway VPC endpoint"
   value       = aws_vpc_endpoint.s3.id
 }
+
+output "ingress_apps_wildcard_fqdn" {
+  description = "Wildcard FQDN for platform apps under the internal domain"
+  value       = "*.apps.${var.internal_domain}"
+}
+
+output "ingress_apex_fqdn" {
+  description = "Apex FQDN of the private domain"
+  value       = var.internal_domain
+}

@@ -42,6 +42,10 @@ module "networking" {
   subnet_ids      = var.private_subnet_ids
   route_table_ids = var.route_table_ids
   internal_domain = "dev.il6.meshdefense.internal"
+
+  enable_ingress_dns_alias = var.enable_ingress_dns_alias
+  ingress_nlb_dns_name     = var.ingress_nlb_dns_name
+  ingress_nlb_zone_id      = var.ingress_nlb_zone_id
 }
 
 # 2. Kubernetes EKS Cluster (AWS IL6)

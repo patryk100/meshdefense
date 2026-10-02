@@ -113,6 +113,22 @@ resource "aws_security_group" "cluster" {
   }
 
   ingress {
+    description = "Allow internal DNS UDP to CoreDNS from VPC"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Allow internal DNS TCP to CoreDNS from VPC"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
     description = "Allow inter-node communication within cluster security group"
     from_port   = 0
     to_port     = 0

@@ -310,6 +310,22 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = [var.vpc_cidr]
   }
 
+  egress {
+    description = "Allow internal DNS UDP outbound to Route 53 resolver and in-cluster CoreDNS"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    description = "Allow internal DNS TCP outbound to Route 53 resolver and in-cluster CoreDNS"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
 
   tags = merge(var.tags, {
     Name       = "${var.environment}-bastion-sg"

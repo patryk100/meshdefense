@@ -24,6 +24,48 @@ resource "aws_route53_zone" "internal" {
 }
 
 # --------------------------------------------------------------------------------------------------
+# Route 53 DNS Alias Records for Internal Ingress Gateway & Big Bang Services (Story 3.3)
+# --------------------------------------------------------------------------------------------------
+resource "aws_route53_record" "ingress_wildcard_apps" {
+  count   = var.enable_ingress_dns_alias ? 1 : 0
+  zone_id = aws_route53_zone.internal.zone_id
+  name    = "*.apps.${var.internal_domain}"
+  type    = "A"
+
+  alias {
+    name                   = var.ingress_nlb_dns_name
+    zone_id                = var.ingress_nlb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "ingress_wildcard_root" {
+  count   = var.enable_ingress_dns_alias ? 1 : 0
+  zone_id = aws_route53_zone.internal.zone_id
+  name    = "*.${var.internal_domain}"
+  type    = "A"
+
+  alias {
+    name                   = var.ingress_nlb_dns_name
+    zone_id                = var.ingress_nlb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "ingress_apex" {
+  count   = var.enable_ingress_dns_alias ? 1 : 0
+  zone_id = aws_route53_zone.internal.zone_id
+  name    = var.internal_domain
+  type    = "A"
+
+  alias {
+    name                   = var.ingress_nlb_dns_name
+    zone_id                = var.ingress_nlb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# --------------------------------------------------------------------------------------------------
 # VPC Endpoints for Completely Disconnected IL6 Operation
 # (Allows access to AWS internal APIs without NAT Gateway or Internet Gateway)
 # --------------------------------------------------------------------------------------------------
