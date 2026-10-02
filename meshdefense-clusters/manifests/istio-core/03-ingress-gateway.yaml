@@ -1,0 +1,64 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: meshdefense-internal-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+    # 1. HTTP Redirect to HTTPS
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*.apps.poc-minimal.il6.meshdefense.internal"
+        - "*.apps.dev.il6.meshdefense.internal"
+        - "*.apps.test.il6.meshdefense.internal"
+        - "*.apps.stg.il6.meshdefense.internal"
+        - "*.apps.prod.il6.meshdefense.internal"
+        - "poc-minimal.il6.meshdefense.internal"
+        - "*.poc-minimal.il6.meshdefense.internal"
+      tls:
+        httpsRedirect: true
+
+    # 2. HTTPS with Cert-Manager Secret (mTLS/TLS)
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "*.apps.poc-minimal.il6.meshdefense.internal"
+        - "*.apps.dev.il6.meshdefense.internal"
+        - "*.apps.test.il6.meshdefense.internal"
+        - "*.apps.stg.il6.meshdefense.internal"
+        - "*.apps.prod.il6.meshdefense.internal"
+        - "poc-minimal.il6.meshdefense.internal"
+        - "*.poc-minimal.il6.meshdefense.internal"
+      tls:
+        mode: SIMPLE
+        credentialName: istio-ingressgateway-certs
+        minProtocolVersion: TLSV1_2
+        cipherSuites:
+          - "ECDHE-ECDSA-AES128-GCM-SHA256"
+          - "ECDHE-RSA-AES128-GCM-SHA256"
+          - "ECDHE-ECDSA-AES256-GCM-SHA384"
+          - "ECDHE-RSA-AES256-GCM-SHA384"
+          - "ECDHE-ECDSA-CHACHA20-POLY1305"
+          - "ECDHE-RSA-CHACHA20-POLY1305"
+
+    # 3. Direct TLS Passthrough Port 9443 for Secure Webhooks & Mesh Peering
+    - port:
+        number: 9443
+        name: tls-passthrough
+        protocol: TLS
+      hosts:
+        - "*.apps.poc-minimal.il6.meshdefense.internal"
+        - "*.apps.dev.il6.meshdefense.internal"
+        - "*.apps.test.il6.meshdefense.internal"
+        - "*.apps.stg.il6.meshdefense.internal"
+        - "*.apps.prod.il6.meshdefense.internal"
+      tls:
+        mode: PASSTHROUGH

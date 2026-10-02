@@ -1,0 +1,134 @@
+# --------------------------------------------------------------------------------------------------
+# 1. Harbor Container & Helm Registry VirtualService
+# --------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: harbor-vs
+  namespace: istio-system
+spec:
+  hosts:
+    - "harbor.apps.poc-minimal.il6.meshdefense.internal"
+    - "harbor.apps.dev.il6.meshdefense.internal"
+    - "harbor.apps.test.il6.meshdefense.internal"
+    - "harbor.apps.stg.il6.meshdefense.internal"
+    - "harbor.apps.prod.il6.meshdefense.internal"
+  gateways:
+    - meshdefense-internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: harbor-core.harbor.svc.cluster.local
+            port:
+              number: 80
+---
+# --------------------------------------------------------------------------------------------------
+# 2. Keycloak Identity & SSO Provider VirtualService
+# --------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: keycloak-vs
+  namespace: istio-system
+spec:
+  hosts:
+    - "keycloak.apps.poc-minimal.il6.meshdefense.internal"
+    - "keycloak.apps.dev.il6.meshdefense.internal"
+    - "keycloak.apps.test.il6.meshdefense.internal"
+    - "keycloak.apps.stg.il6.meshdefense.internal"
+    - "keycloak.apps.prod.il6.meshdefense.internal"
+  gateways:
+    - meshdefense-internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: keycloak.keycloak.svc.cluster.local
+            port:
+              number: 8080
+---
+# --------------------------------------------------------------------------------------------------
+# 3. GitLab DevSecOps Platform VirtualService
+# --------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gitlab-vs
+  namespace: istio-system
+spec:
+  hosts:
+    - "gitlab.apps.poc-minimal.il6.meshdefense.internal"
+    - "gitlab.apps.dev.il6.meshdefense.internal"
+    - "gitlab.apps.test.il6.meshdefense.internal"
+    - "gitlab.apps.stg.il6.meshdefense.internal"
+    - "gitlab.apps.prod.il6.meshdefense.internal"
+  gateways:
+    - meshdefense-internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: gitlab-webservice-default.gitlab.svc.cluster.local
+            port:
+              number: 8080
+---
+# --------------------------------------------------------------------------------------------------
+# 4. SonarQube Code Quality & Security Scanner VirtualService
+# --------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sonarqube-vs
+  namespace: istio-system
+spec:
+  hosts:
+    - "sonarqube.apps.poc-minimal.il6.meshdefense.internal"
+    - "sonarqube.apps.dev.il6.meshdefense.internal"
+    - "sonarqube.apps.test.il6.meshdefense.internal"
+    - "sonarqube.apps.stg.il6.meshdefense.internal"
+    - "sonarqube.apps.prod.il6.meshdefense.internal"
+  gateways:
+    - meshdefense-internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: sonarqube-sonarqube.sonarqube.svc.cluster.local
+            port:
+              number: 9000
+---
+# --------------------------------------------------------------------------------------------------
+# 5. HashiCorp Vault Secrets Engine VirtualService
+# --------------------------------------------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vault-vs
+  namespace: istio-system
+spec:
+  hosts:
+    - "vault.apps.poc-minimal.il6.meshdefense.internal"
+    - "vault.apps.dev.il6.meshdefense.internal"
+    - "vault.apps.test.il6.meshdefense.internal"
+    - "vault.apps.stg.il6.meshdefense.internal"
+    - "vault.apps.prod.il6.meshdefense.internal"
+  gateways:
+    - meshdefense-internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: vault.vault.svc.cluster.local
+            port:
+              number: 8200
