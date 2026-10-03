@@ -1,0 +1,30 @@
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: default
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+spec:
+  provider: aws
+  objectStorage:
+    bucket: meshdefense-poc-minimal-velero-backups-ju9q2f
+    prefix: backups
+  config:
+    region: us-east-1
+    kmsKeyId: arn:aws:kms:us-east-1:123456789012:key/757b6030-0936-4ec6-ae7a-caa588d93d86
+    serverSideEncryption: aws:kms
+---
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: default
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+spec:
+  provider: aws
+  config:
+    region: us-east-1

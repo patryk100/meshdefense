@@ -81,3 +81,12 @@ catalog:
     sbom_ref: "registry1.dso.mil/ironbank/redhat/keycloak/keycloak:25.0.1.sbom"
     cve_status: "0 Critical / 0 High"
     published_date: "2026-09-27"
+
+  - image: "ironbank/vmware-tanzu/velero/velero"
+    upstream_registry: "registry1.dso.mil"
+    latest_tag: "v1.14.0"
+    latest_digest: "sha256:2fa3b8c4d8e579201bc33ca24d673ea937669046f4bfa58097d74aa6b1897c99"
+    sbom_ref: "registry1.dso.mil/ironbank/vmware-tanzu/velero/velero:v1.14.0.sbom"
+    cve_status: "0 Critical / 0 High"
+    published_date: "2026-09-28"
+

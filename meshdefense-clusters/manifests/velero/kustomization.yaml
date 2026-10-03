@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 01-crds.yaml
+  - 02-namespace-rbac.yaml
+  - 03-velero-storage.yaml
+  - 04-velero-deployment.yaml
+  - 05-scheduled-backups.yaml
+  - 06-networkpolicy.yaml

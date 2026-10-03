@@ -1,0 +1,108 @@
+# ==============================================================================
+# MeshDefense Velero Backup & Disaster Recovery Package Values (Story 6.4)
+# Enforces AWS Plugin with IRSA, Private S3 Bucket with SSE-KMS, and EBS Volume Snapshots
+# Complies with NIST 800-53 CP-9, CP-10, SC-13, SC-28, and DoD Cloud SRG IL6
+# ==============================================================================
+
+image:
+  repository: "registry1.dso.mil/ironbank/vmware-tanzu/velero/velero"
+  tag: "v1.14.0"
+  pullPolicy: "IfNotPresent"
+
+# AWS Plugin for Velero (EBS snapshotter and S3 object store)
+initContainers:
+  - name: velero-plugin-for-aws
+    image: "velero/velero-plugin-for-aws:v1.9.2"
+    imagePullPolicy: "IfNotPresent"
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+# IRSA Service Account configuration (No static AWS access keys)
+serviceAccount:
+  server:
+    create: true
+    name: "velero"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-irsa-velero"
+
+# Primary Backup Storage Location (Private S3 Bucket with SSE-KMS)
+configuration:
+  backupStorageLocation:
+    - name: "default"
+      provider: "aws"
+      bucket: "meshdefense-poc-minimal-velero-backups-ju9q2f"
+      prefix: "backups"
+      config:
+        region: "us-east-1"
+        kmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/757b6030-0936-4ec6-ae7a-caa588d93d86"
+        serverSideEncryption: "aws:kms"
+  # Native EBS Volume Snapshot Location
+  volumeSnapshotLocation:
+    - name: "default"
+      provider: "aws"
+      config:
+        region: "us-east-1"
+  features: "EnableCSI"
+  uploaderType: "kopia"
+
+# Hardened Non-Root Security Context
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  runAsNonRoot: true
+  fsGroup: 65534
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Scheduled Automated Backup Policies (Story 6.4)
+schedules:
+  daily-cluster-backup:
+    disabled: false
+    schedule: "0 2 * * *"
+    template:
+      snapshotVolumes: true
+      ttl: "720h0m0s" # 30 days
+      includeClusterResources: true
+      includedNamespaces:
+        - "*"
+      excludedNamespaces:
+        - "kube-system"
+        - "kube-node-lease"
+        - "kube-public"
+      storageLocation: "default"
+      volumeSnapshotLocations:
+        - "default"
+
+  weekly-crds-platform-state-backup:
+    disabled: false
+    schedule: "0 4 * * 0"
+    template:
+      snapshotVolumes: false
+      ttl: "2160h0m0s" # 90 days
+      includeClusterResources: true
+      includedResources:
+        - "customresourcedefinitions"
+        - "namespaces"
+        - "clusterroles"
+        - "clusterrolebindings"
+        - "storageclasses"
+        - "mutatingwebhookconfigurations"
+        - "validatingwebhookconfigurations"
+      storageLocation: "default"
+      volumeSnapshotLocations: []
+
+# Prometheus Metrics Scraping
+metrics:
+  enabled: true
+  scrapeInterval: 30s
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: monitoring

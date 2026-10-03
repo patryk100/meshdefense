@@ -135,6 +135,32 @@ data:
     fi
 
     # --------------------------------------------------------------------------
+    # Test Suite 6: Velero Disaster Recovery & Scheduled Backups
+    # --------------------------------------------------------------------------
+    echo -e "\n${BOLD}6. Validating Velero Disaster Recovery & Backup Locations...${NC}"
+    if kubectl get crd backups.velero.io >/dev/null 2>&1; then
+      test_pass "Velero CRDs are established and responsive"
+      
+      # Check BackupStorageLocation
+      BSL_EXISTS=$(kubectl get backupstoragelocation -n velero -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+      if [ -n "${BSL_EXISTS}" ]; then
+        test_pass "Velero BackupStorageLocation configured (${BSL_EXISTS})"
+      else
+        test_fail "No Velero BackupStorageLocation found in namespace 'velero'"
+      fi
+      
+      # Check Automated Schedules
+      SCHEDULES_COUNT=$(kubectl get schedules -n velero --no-headers 2>/dev/null | wc -l | tr -d ' ')
+      if [ "${SCHEDULES_COUNT}" -ge 1 ]; then
+        test_pass "Automated backup schedules configured (${SCHEDULES_COUNT} schedule(s) found)"
+      else
+        test_fail "No Velero automated backup schedules found"
+      fi
+    else
+      test_fail "Velero CRDs missing from cluster"
+    fi
+
+    # --------------------------------------------------------------------------
     # Final Result & Gating Evaluation
     # --------------------------------------------------------------------------
     echo -e "\n${BOLD}==============================================================================${NC}"

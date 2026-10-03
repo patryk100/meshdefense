@@ -1,0 +1,52 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-cluster-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+    schedule-frequency: daily
+spec:
+  schedule: "0 2 * * *"
+  template:
+    snapshotVolumes: true
+    ttl: 720h0m0s # 30 days retention
+    includeClusterResources: true
+    includedNamespaces:
+      - "*"
+    excludedNamespaces:
+      - kube-system
+      - kube-node-lease
+      - kube-public
+    storageLocation: default
+    volumeSnapshotLocations:
+      - default
+    hooks: {}
+---
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: weekly-crds-platform-state-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+    schedule-frequency: weekly
+spec:
+  schedule: "0 4 * * 0"
+  template:
+    snapshotVolumes: false
+    ttl: 2160h0m0s # 90 days retention
+    includeClusterResources: true
+    includedResources:
+      - customresourcedefinitions
+      - namespaces
+      - clusterroles
+      - clusterrolebindings
+      - storageclasses
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    storageLocation: default
+    volumeSnapshotLocations: []
+    hooks: {}
