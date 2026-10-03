@@ -197,7 +197,9 @@ spec:
             - name: dashboard-providers
               mountPath: /etc/grafana/provisioning/dashboards
             - name: dashboards
-              mountPath: /var/lib/grafana/dashboards
+              mountPath: /var/lib/grafana/dashboards/stig
+            - name: dashboards-cato-executive
+              mountPath: /var/lib/grafana/dashboards/cato-executive
             - name: data
               mountPath: /var/lib/grafana
       volumes:
@@ -210,6 +212,9 @@ spec:
         - name: dashboards
           configMap:
             name: grafana-dashboards-cato-stig
+        - name: dashboards-cato-executive
+          configMap:
+            name: grafana-cato-executive-dashboard
         - name: data
           emptyDir: {}
 ---

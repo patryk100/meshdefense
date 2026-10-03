@@ -8,3 +8,4 @@ resources:
   - 04-tempo-tracing.yaml
   - 05-grafana-dashboards.yaml
   - 06-ingress-virtualservice.yaml
+  - 07-grafana-cato-executive-dashboard.yaml
