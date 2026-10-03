@@ -1,0 +1,14 @@
+# --------------------------------------------------------------------------------------------------
+# MeshDefense Zero-Trust Mutual TLS PeerAuthentication: tenant-telemetry
+# Enforces STRICT mTLS pod-to-pod encryption rejecting plaintext (NIST 800-53 SC-8)
+# --------------------------------------------------------------------------------------------------
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: tenant-telemetry
+  labels:
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  mtls:
+    mode: STRICT

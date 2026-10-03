@@ -123,3 +123,79 @@ python3 meshdefense-gitops/scripts/tenant-customization-engine.py \
 
 kubectl kustomize meshdefense-gitops/tenants/mission-analytics
 ```
+
+---
+
+## Story 4.8: Automated Tenant Onboarding GitOps Factory
+
+The **Automated Tenant Onboarding GitOps Factory** (`meshdefense-gitops/scripts/tenant-onboarding-factory.py`) empowers application developers to self-serve workload deployments while strictly preserving DoD IL6 and NIST 800-53 zero-trust security guardrails.
+
+### Developer Declarative Specification (`TenantOnboardingRequest`)
+Developers submit a single declarative YAML file defining application metadata, service accounts, compute quotas, egress destinations, Kyverno exceptions, and AWS IRSA access:
+
+```yaml
+apiVersion: onboarding.meshdefense.io/v1alpha1
+kind: TenantOnboardingRequest
+metadata:
+  name: telemetry-analytics
+spec:
+  tenant:
+    name: telemetry-analytics
+    namespace: tenant-telemetry
+    serviceAccount: telemetry-analytics-sa
+    environment: poc-minimal
+  resources:
+    requests: { cpu: "4", memory: "8Gi" }
+    limits: { cpu: "8", memory: "16Gi" }
+    pods: "40"
+    services: "10"
+  ingress:
+    enabled: true
+    hosts:
+      - "telemetry.apps.poc-minimal.il6.meshdefense.internal"
+      - "*.telemetry.apps.poc-minimal.il6.meshdefense.internal"
+    tlsSecretName: "telemetry-analytics-ingress-cert"
+  egressRules:
+    - name: egress-internal-rds-postgres
+      hosts: ["postgres.rds.poc-minimal.il6.meshdefense.internal"]
+      ports: [{ number: 5432, protocol: TCP, name: postgres-tcp }]
+      resolution: DNS
+      location: MESH_EXTERNAL
+    - name: egress-external-s3-endpoints
+      hosts: ["s3.us-east-1.amazonaws.com"]
+      ports: [{ number: 443, protocol: HTTPS, name: https-s3 }]
+      resolution: DNS
+      location: MESH_EXTERNAL
+  irsa:
+    enabled: true
+    roleName: "meshdefense-poc-minimal-irsa-telemetry-analytics"
+    inlinePolicyStatements:
+      - sid: "AllowS3MetricsStorage"
+        effect: "Allow"
+        actions: ["s3:PutObject", "s3:GetObject", "s3:ListBucket"]
+        resources: ["arn:aws:s3:::meshdefense-poc-minimal-*-loki/*"]
+  kyvernoExceptions:
+    - policyName: "enforce-harbor-cosign-verification"
+      ruleNames: ["verify-ironbank-and-harbor-signatures"]
+      reason: "Telemetry collector requires vendor diagnostic agent certified by DISA STIG"
+```
+
+### Generated Artifacts
+Running the factory automatically generates the complete hardened platform stack:
+1. **Hardened Namespace & ServiceAccount**: Labeled with `istio-injection: enabled`, `pod-security.kubernetes.io/enforce: restricted`, and `eks.amazonaws.com/role-arn` IRSA annotation.
+2. **STRICT mTLS PeerAuthentication**: Enforces encrypted pod-to-pod mutual TLS, rejecting unencrypted communication (NIST 800-53 SC-8).
+3. **Egress ServiceEntry**: Declarative Istio ServiceEntries for external database and AWS API endpoints (NIST 800-53 SC-7).
+4. **Microsegmentation NetworkPolicy**: Default-deny with explicit intra-namespace, ingress gateway, Prometheus scraper, and authorized egress port rules.
+5. **Kyverno PolicyExceptions (v2beta1)**: Granular, scoped admission exceptions for specific workloads without degrading cluster-wide supply chain controls.
+6. **Cert-Manager TLS Certificate & Istio Gateway**: ECDSA-256 automated 90-day certificates.
+7. **AWS IRSA Terraform Configuration**: Dynamic least-privilege IAM role mapping with STS OIDC web identity trust.
+8. **Kustomization Overlay**: Standard `kustomization.yaml` packaging all resources for Flux v2 GitOps reconciliation.
+
+### Execution
+```bash
+python3 meshdefense-gitops/scripts/tenant-onboarding-factory.py \
+  --spec meshdefense-gitops/tenants/telemetry-analytics/tenant-onboarding.yaml \
+  --output-dir meshdefense-gitops/tenants/telemetry-analytics/manifests
+
+kubectl kustomize meshdefense-gitops/tenants/telemetry-analytics/manifests
+```

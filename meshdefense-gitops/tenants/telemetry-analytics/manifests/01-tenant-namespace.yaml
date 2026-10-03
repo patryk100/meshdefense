@@ -1,0 +1,54 @@
+# --------------------------------------------------------------------------------------------------
+# MeshDefense Tenant Namespace & Governance: tenant-telemetry
+# Enforces NIST SP 800-53 AC-3, SC-7 and DoD Enterprise DevSecOps Reference Design
+# --------------------------------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-telemetry
+  labels:
+    istio-injection: enabled
+    meshdefense.io/tenant: "telemetry-analytics"
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telemetry-analytics-sa
+  namespace: tenant-telemetry
+  labels:
+    app.kubernetes.io/name: telemetry-analytics
+    meshdefense.io/tenant: "telemetry-analytics"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-irsa-telemetry-analytics"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: telemetry-analytics-compute-quota
+  namespace: tenant-telemetry
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    pods: "40"
+    services: "10"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: telemetry-analytics-limits
+  namespace: tenant-telemetry
+spec:
+  limits:
+    - default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      type: Container

@@ -1,0 +1,38 @@
+# --------------------------------------------------------------------------------------------------
+# MeshDefense Scoped Kyverno PolicyExceptions (v2beta1): tenant-telemetry
+# Authorized granular exemptions for specialized workloads (NIST 800-53 CM-7)
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: kyverno.io/v2beta1
+kind: PolicyException
+metadata:
+  name: telemetry-analytics-exception-1
+  namespace: tenant-telemetry
+  labels:
+    app.kubernetes.io/name: telemetry-analytics
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  exceptions:
+    - policyName: enforce-harbor-cosign-verification
+      ruleNames:
+          - "verify-ironbank-and-harbor-signatures"
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+          namespaces:
+            - tenant-telemetry
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: telemetry-analytics
+  conditions:
+    all:
+      - key: "{{ request.operation }}"
+        operator: In
+        values:
+          - CREATE
+          - UPDATE
+

@@ -50,3 +50,9 @@ variable "ingress_nlb_zone_id" {
   default     = null
   description = "Zone ID of internal NLB"
 }
+
+variable "custom_irsa_roles" {
+  description = "Optional custom IRSA roles dynamically configured for onboarding tenants"
+  type        = any
+  default     = {}
+}

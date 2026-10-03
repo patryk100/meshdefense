@@ -190,6 +190,9 @@ module "irsa_factory" {
   # 7. AWS Load Balancer Controller (Story 3.2 - Air-Gapped NLB Provisioning)
   enable_aws_load_balancer_controller = true
 
+  # 8. Dynamic Custom Tenant IRSA Roles (Story 4.8)
+  custom_roles = var.custom_irsa_roles
+
   tags = {
     Role           = "IRSA-ServiceAccounts"
     Compliance     = "DoD-IL6,NIST-800-53-AC-3_AC-6_SC-12_SC-13"

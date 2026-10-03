@@ -1,0 +1,48 @@
+# --------------------------------------------------------------------------------------------------
+# MeshDefense Tenant TLS Certificate & Istio Gateway: telemetry-analytics
+# ECDSA-256 automated certificate with 90-day validity (NIST 800-53 SC-8, SC-13)
+# --------------------------------------------------------------------------------------------------
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: telemetry-analytics-ingress-cert
+  namespace: istio-system
+  labels:
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  secretName: telemetry-analytics-ingress-cert
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: meshdefense-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - "telemetry.apps.poc-minimal.il6.meshdefense.internal"
+    - "*.telemetry.apps.poc-minimal.il6.meshdefense.internal"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: telemetry-analytics-gateway
+  namespace: istio-system
+  labels:
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  selector:
+    app: istio-ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https-telemetry-analytics
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: telemetry-analytics-ingress-cert
+      hosts:
+        - "telemetry.apps.poc-minimal.il6.meshdefense.internal"
+        - "*.telemetry.apps.poc-minimal.il6.meshdefense.internal"

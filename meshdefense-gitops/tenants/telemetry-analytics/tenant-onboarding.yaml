@@ -1,0 +1,83 @@
+# ==============================================================================
+# MeshDefense Tenant Onboarding Specification
+# Standard Custom Resource for Self-Service Workload Provisioning (Story 4.8)
+# Complies with NIST 800-53 AC-3, SC-7, SC-8, SC-12, SC-13, and DoD IL6
+# ==============================================================================
+apiVersion: onboarding.meshdefense.io/v1alpha1
+kind: TenantOnboardingRequest
+metadata:
+  name: telemetry-analytics
+spec:
+  tenant:
+    name: telemetry-analytics
+    namespace: tenant-telemetry
+    serviceAccount: telemetry-analytics-sa
+    description: "Mission Telemetry and Operational Metrics Analytics Engine"
+    environment: "poc-minimal"
+
+  resources:
+    requests:
+      cpu: "4"
+      memory: "8Gi"
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+    pods: "40"
+    services: "10"
+
+  ingress:
+    enabled: true
+    issuer: "meshdefense-cluster-issuer"
+    hosts:
+      - "telemetry.apps.poc-minimal.il6.meshdefense.internal"
+      - "*.telemetry.apps.poc-minimal.il6.meshdefense.internal"
+    tlsSecretName: "telemetry-analytics-ingress-cert"
+
+  egressRules:
+    - name: egress-internal-rds-postgres
+      hosts:
+        - "postgres.rds.poc-minimal.il6.meshdefense.internal"
+      ports:
+        - number: 5432
+          protocol: TCP
+          name: postgres-tcp
+      resolution: DNS
+      location: MESH_EXTERNAL
+    - name: egress-external-s3-endpoints
+      hosts:
+        - "s3.us-east-1.amazonaws.com"
+      ports:
+        - number: 443
+          protocol: HTTPS
+          name: https-s3
+      resolution: DNS
+      location: MESH_EXTERNAL
+
+  irsa:
+    enabled: true
+    roleName: "meshdefense-poc-minimal-irsa-telemetry-analytics"
+    description: "Least-privilege IRSA role for telemetry analytics data ingestion"
+    managedPolicyArns: []
+    inlinePolicyStatements:
+      - sid: "AllowS3MetricsStorage"
+        effect: "Allow"
+        actions:
+          - "s3:PutObject"
+          - "s3:GetObject"
+          - "s3:ListBucket"
+        resources:
+          - "arn:aws:s3:::meshdefense-poc-minimal-*-loki"
+          - "arn:aws:s3:::meshdefense-poc-minimal-*-loki/*"
+      - sid: "AllowKMSStorageDecrypt"
+        effect: "Allow"
+        actions:
+          - "kms:Decrypt"
+          - "kms:GenerateDataKey"
+        resources:
+          - "arn:aws:kms:us-east-1:123456789012:key/*"
+
+  kyvernoExceptions:
+    - policyName: "enforce-harbor-cosign-verification"
+      ruleNames:
+        - "verify-ironbank-and-harbor-signatures"
+      reason: "Telemetry collector requires vendor diagnostic agent certified by DISA STIG"

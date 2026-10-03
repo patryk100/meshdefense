@@ -1,0 +1,44 @@
+# --------------------------------------------------------------------------------------------------
+# MeshDefense Egress ServiceEntries: tenant-telemetry
+# Declarative external service registration enforcing zero-trust boundaries (NIST 800-53 SC-7)
+# --------------------------------------------------------------------------------------------------
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: egress-internal-rds-postgres
+  namespace: tenant-telemetry
+  labels:
+    app.kubernetes.io/name: telemetry-analytics
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  hosts:
+    - "postgres.rds.poc-minimal.il6.meshdefense.internal"
+  location: MESH_EXTERNAL
+  resolution: DNS
+  exportTo:
+    - "."
+  ports:
+    - number: 5432
+      name: postgres-tcp
+      protocol: TCP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: egress-external-s3-endpoints
+  namespace: tenant-telemetry
+  labels:
+    app.kubernetes.io/name: telemetry-analytics
+    meshdefense.io/tenant: "telemetry-analytics"
+spec:
+  hosts:
+    - "s3.us-east-1.amazonaws.com"
+  location: MESH_EXTERNAL
+  resolution: DNS
+  exportTo:
+    - "."
+  ports:
+    - number: 443
+      name: https-s3
+      protocol: HTTPS

@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 01-tenant-namespace.yaml
+  - 02-peer-authentication.yaml
+  - 03-egress-serviceentry.yaml
+  - 04-network-policy.yaml
+  - 05-kyverno-exceptions.yaml
+  - 06-tenant-ingress.yaml
