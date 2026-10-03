@@ -123,7 +123,7 @@ module "kubernetes" {
   system_node_min_size       = 1
   system_node_max_size       = 2
 
-  admin_role_arns    = var.enable_bastion ? [module.bastion[0].bastion_iam_role_arn] : []
+  admin_role_arns = var.enable_bastion ? [module.bastion[0].bastion_iam_role_arn] : []
 
   tags = {
     Cluster = "meshdefense-${var.environment}-minimal"
@@ -240,7 +240,7 @@ module "irsa_factory" {
   ebs_kms_key_arn = module.kms_keyring.ebs_key_arn
 
   # 6. Flux v2 GitOps Source & Helm Controllers (Story 2.5)
-  enable_flux       = true
+  enable_flux         = true
   flux_s3_bucket_arns = [module.s3_storage.bucket_arns["harbor"]]
   flux_kms_key_arns   = [module.kms_keyring.s3_key_arn, module.kms_keyring.secrets_key_arn]
 
@@ -264,7 +264,11 @@ module "airgap_seed_registry" {
 
   environment = var.environment
   additional_repositories = [
-    "external-secrets/external-secrets"
+    "external-secrets/external-secrets",
+    "ironbank/grafana/loki",
+    "ironbank/opensource/prometheus/prometheus",
+    "ironbank/grafana/tempo",
+    "ironbank/grafana/grafana/grafana"
   ]
 
   tags = {

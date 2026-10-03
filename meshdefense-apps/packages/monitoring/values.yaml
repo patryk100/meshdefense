@@ -1,0 +1,134 @@
+# ==============================================================================
+# MeshDefense Big Bang Monitoring Package Values (Story 5.3)
+# GovCloud / Air-Gapped IL6 Production Tuning
+# Enforces S3 persistence for Loki, OMB M-21-31 retention, and pre-loaded dashboards
+# ==============================================================================
+
+domain: "apps.poc-cloud-minimal.meshdefense.internal"
+
+# --- Prometheus Tuning (OMB M-21-31 Compliance) ---
+prometheus:
+  enabled: true
+  prometheusSpec:
+    retention: "90d"
+    retentionSize: "40GB"
+    walCompression: true
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "gp3-encrypted"
+          resources:
+            requests:
+              storage: 50Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1500m
+        memory: 2Gi
+    podAntiAffinity: "preferredDuringSchedulingIgnoredDuringExecution"
+    securityContext:
+      runAsUser: 65534
+      runAsNonRoot: true
+      fsGroup: 65534
+
+# --- Alertmanager ---
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    retention: "120h"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# --- Loki Tuning (AWS S3 Persistence & M-21-31 Retention) ---
+loki:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "loki"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+  config:
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    storage_config:
+      aws:
+        s3: "s3.us-east-1.amazonaws.com"
+        bucketnames: "meshdefense-poc-minimal-loki-logs-ju9q2f"
+        region: "us-east-1"
+        insecure: false
+        sse_encryption: true
+      tsdb_shipper:
+        active_index_directory: "/loki/index"
+        cache_location: "/loki/index_cache"
+        cache_ttl: "24h"
+    schema_config:
+      configs:
+        - from: "2024-01-01"
+          store: "tsdb"
+          object_store: "s3"
+          schema: "v13"
+          index:
+            prefix: "loki_index_"
+            period: "24h"
+    compactor:
+      working_directory: "/loki/compactor"
+      retention_enabled: true
+      retention_delete_delay: "2h"
+      delete_request_store: "s3"
+    limits_config:
+      retention_period: "2160h" # 90 days active retention
+      max_query_length: "720h"
+      reject_old_samples: true
+
+# --- Tempo Distributed Tracing (S3 Persistence) ---
+tempo:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: "tempo"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+  storage:
+    trace:
+      backend: "s3"
+      s3:
+        bucket: "meshdefense-poc-minimal-loki-logs-ju9q2f"
+        endpoint: "s3.us-east-1.amazonaws.com"
+        region: "us-east-1"
+        insecure: false
+  compactor:
+    compaction:
+      block_retention: "2160h"
+
+# --- Grafana Provisioning ---
+grafana:
+  enabled: true
+  adminPassword: "MeshDefenseGovCloud2026!"
+  sidecar:
+    dashboards:
+      enabled: true
+      label: "grafana_dashboard"
+      labelValue: "1"
+      searchNamespace: "ALL"
+    datasources:
+      enabled: true
+      label: "grafana_datasource"
+  serviceAccount:
+    create: true
+    name: "grafana"
+  istio:
+    enabled: true
+    virtualService:
+      gateways:
+        - "istio-system/public-ingressgateway"
+        - "istio-ingress/istio-ingressgateway"
+      hosts:
+        - "grafana.apps.poc-cloud-minimal.meshdefense.internal"

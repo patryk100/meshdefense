@@ -1,0 +1,164 @@
+# ==============================================================================
+# Tempo Distributed Tracing Backend Configuration (Story 5.3)
+# S3 Persistence via IRSA & In-Memory / Local Block WAL
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-config
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: monitoring
+data:
+  tempo.yaml: |
+    server:
+      http_listen_port: 3200
+      log_level: info
+
+    distributor:
+      receivers:
+        jaeger:
+          protocols:
+            thrift_http:
+              endpoint: 0.0.0.0:14268
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318
+            grpc:
+              endpoint: 0.0.0.0:4317
+
+    compactor:
+      compaction:
+        block_retention: 2160h # 90 days retention (M-21-31 compliance)
+        compacted_block_retention: 2h
+
+    storage:
+      trace:
+        backend: s3
+        s3:
+          bucket: meshdefense-poc-minimal-loki-logs-ju9q2f
+          endpoint: s3.us-east-1.amazonaws.com
+          region: us-east-1
+          insecure: false
+        wal:
+          path: /var/tempo/wal
+        local:
+          path: /var/tempo/blocks
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: monitoring
+    spec:
+      serviceAccountName: tempo
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: tempo
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/grafana/tempo:2.4.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - -config.file=/etc/tempo/tempo.yaml
+          ports:
+            - name: http
+              containerPort: 3200
+              protocol: TCP
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: jaeger-http
+              containerPort: 14268
+              protocol: TCP
+          env:
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config
+              mountPath: /etc/tempo
+            - name: wal
+              mountPath: /var/tempo
+      volumes:
+        - name: config
+          configMap:
+            name: tempo-config
+        - name: wal
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: monitoring
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3200
+      targetPort: http
+      protocol: TCP
+    - name: otlp-grpc
+      port: 4317
+      targetPort: otlp-grpc
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+      protocol: TCP
+    - name: jaeger-http
+      port: 14268
+      targetPort: jaeger-http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: tempo

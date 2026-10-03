@@ -206,7 +206,11 @@ module "airgap_seed_registry" {
 
   environment = "prod"
   additional_repositories = [
-    "external-secrets/external-secrets"
+    "external-secrets/external-secrets",
+    "ironbank/grafana/loki",
+    "ironbank/opensource/prometheus/prometheus",
+    "ironbank/grafana/tempo",
+    "ironbank/grafana/grafana/grafana"
   ]
 
   tags = {
