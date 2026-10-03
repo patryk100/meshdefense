@@ -1,0 +1,328 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kyverno
+  labels:
+    app.kubernetes.io/name: kyverno
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kyverno-admission-controller
+  namespace: kyverno
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: admission-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:admission-controller
+  labels:
+    app.kubernetes.io/name: kyverno
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - namespaces
+      - services
+      - configmaps
+      - secrets
+      - serviceaccounts
+      - resourcequotas
+      - limitranges
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - kyverno.io
+    resources:
+      - clusterpolicies
+      - policies
+      - policyexceptions
+      - updaterequests
+      - cleanuppolicies
+      - clustercleanuppolicies
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - reports.kyverno.io
+      - wgpolicyk8s.io
+    resources:
+      - clusterephemeralreports
+      - ephemeralreports
+      - clusterpolicyreports
+      - policyreports
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - events.k8s.io
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno:admission-controller
+  labels:
+    app.kubernetes.io/name: kyverno
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno:admission-controller
+subjects:
+  - kind: ServiceAccount
+    name: kyverno-admission-controller
+    namespace: kyverno
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kyverno-admission-isolation
+  namespace: kyverno
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow incoming admission review webhooks from Kubernetes API server (ports 9443)
+    - ports:
+        - protocol: TCP
+          port: 9443
+    # Allow Prometheus metrics scraping (port 8000)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow communication to Kubernetes API server
+    - to:
+        - ipBlock:
+            cidr: 10.104.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow OCI / Cosign verification to internal Harbor
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: harbor
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kyverno-svc-tls
+  namespace: kyverno
+spec:
+  secretName: kyverno-svc-tls
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: meshdefense-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - kyverno-svc
+    - kyverno-svc.kyverno
+    - kyverno-svc.kyverno.svc
+    - kyverno-svc.kyverno.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kyverno-svc
+  namespace: kyverno
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: admission-controller
+spec:
+  type: ClusterIP
+  ports:
+    - name: https-webhook
+      port: 443
+      targetPort: 9443
+      protocol: TCP
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: admission-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno-admission-controller
+  namespace: kyverno
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: admission-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kyverno
+      app.kubernetes.io/component: admission-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kyverno
+        app.kubernetes.io/component: admission-controller
+    spec:
+      serviceAccountName: kyverno-admission-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: kyverno
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/kyverno/kyverno:v1.13.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - --admissionReports=true
+            - --aggregateReports=true
+            - --policyReports=true
+            - --loggingFormat=json
+            - --v=2
+            - --webhookTimeout=15
+            - --serverIP=
+          env:
+            - name: KYVERNO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KYVERNO_SVC
+              value: kyverno-svc
+            - name: KYVERNO_DEPLOYMENT
+              value: kyverno-admission-controller
+            - name: KYVERNO_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - name: webhook
+              containerPort: 9443
+              protocol: TCP
+            - name: metrics
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/kyverno/certs
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: kyverno-svc-tls
+            optional: true

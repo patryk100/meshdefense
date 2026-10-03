@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 01-crds.yaml
+  - 02-admission-controller.yaml
+  - 03-nist-800-53-policy-pack.yaml
+  - 04-admission-event-streamer.yaml

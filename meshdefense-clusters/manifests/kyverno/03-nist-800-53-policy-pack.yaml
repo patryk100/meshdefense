@@ -1,0 +1,251 @@
+# ==============================================================================
+# MeshDefense Kyverno NIST 800-53 Hardened Policy Pack (Story 5.1)
+# Mandated Controls:
+#   - AC-3: Access Enforcement (Non-root, privilege escalation, host namespaces)
+#   - CM-7: Least Functionality (Capability drop, privileged containers)
+#   - SI-7: Software, Firmware, and Information Integrity (Cosign signatures)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. NIST 800-53 AC-3 / CM-7: Disallow Privileged Containers
+# ------------------------------------------------------------------------------
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nist-800-53-disallow-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Disallow Privileged Containers
+    policies.kyverno.io/category: NIST SP 800-53 AC-3, CM-7 / Pod Security Standards
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Privileged containers share the host execution context, bypassing Linux security
+      boundaries. NIST 800-53 AC-3 and CM-7 require disallowing privileged containers
+      across all multi-tenant workloads.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-privileged-containers
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - tenant-*
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - istio-system
+      validate:
+        message: "Privileged containers are strictly forbidden under NIST 800-53 AC-3 / CM-7."
+        pattern:
+          spec:
+            =(ephemeralContainers):
+              - =(securityContext):
+                  =(privileged): "false"
+            =(initContainers):
+              - =(securityContext):
+                  =(privileged): "false"
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+---
+# ------------------------------------------------------------------------------
+# 2. NIST 800-53 AC-3: Disallow Privilege Escalation
+# ------------------------------------------------------------------------------
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nist-800-53-disallow-privilege-escalation
+  annotations:
+    policies.kyverno.io/title: Disallow Privilege Escalation
+    policies.kyverno.io/category: NIST SP 800-53 AC-3 / Pod Security Standards
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Security context must explicitly set allowPrivilegeEscalation: false to prevent
+      setuid binaries from elevating container privileges beyond defined baseline.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - tenant-*
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - istio-system
+      validate:
+        message: "Privilege escalation must be disabled (allowPrivilegeEscalation: false) per NIST 800-53 AC-3."
+        pattern:
+          spec:
+            =(ephemeralContainers):
+              - securityContext:
+                  allowPrivilegeEscalation: false
+            =(initContainers):
+              - securityContext:
+                  allowPrivilegeEscalation: false
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: false
+---
+# ------------------------------------------------------------------------------
+# 3. NIST 800-53 AC-3 / CM-7: Require Run As Non-Root
+# ------------------------------------------------------------------------------
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nist-800-53-require-run-as-non-root
+  annotations:
+    policies.kyverno.io/title: Require Run As Non-Root User
+    policies.kyverno.io/category: NIST SP 800-53 AC-3, CM-7 / Pod Security Standards
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Containers must run as a non-root user (UID > 0) to mitigate container breakout risks
+      and prevent unauthorized access to host OS resources.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - tenant-*
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - istio-system
+      validate:
+        message: "Running containers as root (UID 0) is forbidden per NIST 800-53 AC-3 / CM-7."
+        anyPattern:
+          - spec:
+              securityContext:
+                runAsNonRoot: true
+          - spec:
+              containers:
+                - securityContext:
+                    runAsNonRoot: true
+---
+# ------------------------------------------------------------------------------
+# 4. NIST 800-53 AC-3 / SC-7: Disallow Host Namespaces (HostPID, HostIPC, HostNetwork)
+# ------------------------------------------------------------------------------
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nist-800-53-disallow-host-namespaces
+  annotations:
+    policies.kyverno.io/title: Disallow Host Process and Network Namespaces
+    policies.kyverno.io/category: NIST SP 800-53 AC-3, SC-7 / Pod Security Standards
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Pods sharing host network, PID, or IPC namespaces can sniff node traffic, inspect
+      processes, or tamper with shared memory across security boundaries.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-host-namespaces
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - tenant-*
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+      validate:
+        message: "Host namespaces (hostNetwork, hostPID, hostIPC) are forbidden per NIST 800-53 AC-3 / SC-7."
+        pattern:
+          spec:
+            =(hostNetwork): "false"
+            =(hostPID): "false"
+            =(hostIPC): "false"
+---
+# ------------------------------------------------------------------------------
+# 5. NIST 800-53 SI-7: Enforce Cryptographic Cosign Image Signatures
+# ------------------------------------------------------------------------------
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: nist-800-53-enforce-cosign-signatures
+  annotations:
+    policies.kyverno.io/title: Enforce Cosign Signature Verification on Iron Bank Images
+    policies.kyverno.io/category: NIST SP 800-53 SI-7 / Supply Chain Integrity
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Enforces cryptographic signature verification on Iron Bank and internal Harbor
+      workloads before cluster admission. Unsigned images are rejected at admission.
+spec:
+  validationFailureAction: Enforce
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-ironbank-and-platform-cosign-signatures
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - default
+                - platform-core
+                - mission-analytics
+                - tenant-*
+                - bigbang
+      verifyImages:
+        - imageReferences:
+            - "registry.il6.meshdefense.internal/*"
+            - "harbor.apps.*"
+            - "registry1.dso.mil/ironbank/*"
+            - "123456789012.dkr.ecr.us-east-1.amazonaws.com/*"
+          attestors:
+            - entries:
+                - keys:
+                    publicKeys: |-
+                      -----BEGIN PUBLIC KEY-----
+                      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIE7v9J6ttQus6itUoyfMCqMjaIqm
+                      R8XrntaedsdEhPPchOQuFzqTyyAPGifV1SaEu8medVRi6mVICWbVwOteNg==
+                      -----END PUBLIC KEY-----
+          mutateDigest: false
+          verifyDigest: true
+          required: true

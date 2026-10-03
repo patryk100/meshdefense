@@ -1,0 +1,67 @@
+# ==============================================================================
+# MeshDefense Kyverno Package Values for Big Bang (Story 5.1)
+# Enforces NIST SP 800-53 (AC-3, CM-7, SI-7, AU-2, AU-3, AU-6)
+# Emits structured JSON audit logging for all admission decisions
+# ==============================================================================
+
+replicaCount: 1
+
+admissionController:
+  replicas: 1
+  logging:
+    format: json
+    verbosity: 2
+  rbac:
+    create: true
+  serviceAccount:
+    create: true
+    name: kyverno-admission-controller
+  container:
+    image:
+      registry: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+      repository: kyverno/kyverno
+      tag: v1.13.2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 10001
+      capabilities:
+        drop:
+          - ALL
+
+# Enable structured JSON policy and admission reports
+reports:
+  admissionReports: true
+  aggregateReports: true
+  policyReports: true
+
+# Webhook configuration
+webhooks:
+  failurePolicy: Fail
+  timeoutSeconds: 15
+
+# TLS Certificate Management via Cert-Manager
+certManager:
+  enabled: true
+  clusterIssuer: meshdefense-cluster-issuer
+
+# Network isolation policy
+networkPolicy:
+  enabled: true
+  ingress:
+    # Allow admission webhooks from API Server
+    - ports:
+        - port: 9443
+          protocol: TCP
+    # Allow Prometheus scraping
+    - ports:
+        - port: 8000
+          protocol: TCP
