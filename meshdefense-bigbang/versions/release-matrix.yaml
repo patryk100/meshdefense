@@ -1,5 +1,50 @@
 # Platform One Big Bang Release & Compatibility Matrix for DoD IL6
+# Tracks official Big Bang releases, upstream chart versions, deprecations, and breaking structural changes
 version_matrix:
+  - bigbang_version: "3.31.0"
+    flux_version: ">= 2.3.0"
+    kubernetes_versions:
+      - "1.29"
+      - "1.30"
+      - "1.31"
+    cloud_support:
+      aws_eks: ">= 1.29 (AL2023 / AL2 STIG)"
+      azure_aks: ">= 1.29 (FIPS 140-2)"
+      gcp_gke: ">= 1.29 (Shielded COS)"
+    core_packages:
+      istio: "1.22.4"
+      gatekeeper: "3.16.3"
+      neuvector: "5.4.0"
+      prometheus_operator: "0.74.0"
+      monitoring: "61.2.0"
+      grafana: "10.4.3"
+      fluentbit: "3.0.6"
+      argocd: "2.11.4"
+      vault: "0.28.1"
+      keycloak: "24.0.5"
+      kyverno: "3.2.6"
+      loki: "2.9.8"
+      tempo: "2.4.1"
+      vector: "0.38.0"
+    breaking_changes:
+      - package: "neuvector"
+        component: "crd"
+        severity: "CRITICAL"
+        description: "NeuVector 5.4.0 deprecates v1alpha1 CRD schemas in favor of v1 for NVClusterGroup and NVRules. Upgrades require applying new CRDs prior to controller rollout."
+      - package: "monitoring"
+        component: "helm-values"
+        severity: "HIGH"
+        description: "Prometheus Operator 0.74.0 migrates alertmanager.alertmanagerSpec to alertmanager.spec. Legacy values paths will cause silent Helm validation failures."
+      - package: "istio"
+        component: "mesh-config"
+        severity: "MEDIUM"
+        description: "Istio 1.22.4 removes deprecated EnvoyFilter match fields (listener.filterChain.filter). Ensure all custom EnvoyFilters conform to Envoy API v3."
+    deprecations:
+      - target: "gatekeeper"
+        timeline: "Deprecated in 3.32.0; replaced completely by Kyverno admission controllers."
+      - target: "fluentbit"
+        timeline: "Deprecated in Big Bang 3.31.0 in favor of Vector OCSF telemetry daemonset."
+
   - bigbang_version: "3.30.0"
     flux_version: ">= 2.3.0"
     kubernetes_versions:
@@ -15,9 +60,24 @@ version_matrix:
       gatekeeper: "3.16.1"
       neuvector: "5.3.2"
       prometheus_operator: "0.73.0"
+      monitoring: "60.0.0"
       grafana: "10.4.1"
       fluentbit: "3.0.4"
       argocd: "2.11.2"
+      vault: "0.28.0"
+      keycloak: "24.0.4"
+      kyverno: "3.2.4"
+      loki: "2.9.8"
+      tempo: "2.4.1"
+      vector: "0.38.0"
+    breaking_changes:
+      - package: "istio"
+        component: "telemetry"
+        severity: "MEDIUM"
+        description: "Default telemetry provider changed to OpenTelemetry v1 API format."
+    deprecations:
+      - target: "gatekeeper"
+        timeline: "Phase 1 deprecation notice in Big Bang 3.30.0."
 
   - bigbang_version: "2.46.0"
     flux_version: ">= 2.2.0"
@@ -34,8 +94,16 @@ version_matrix:
       gatekeeper: "3.14.0"
       neuvector: "5.3.0"
       prometheus_operator: "0.71.0"
+      monitoring: "58.1.0"
       grafana: "10.2.3"
       fluentbit: "2.2.2"
+      argocd: "2.10.4"
+    breaking_changes:
+      - package: "neuvector"
+        component: "manager"
+        severity: "HIGH"
+        description: "NeuVector Manager SSL port default moved from 8443 to 443."
+    deprecations: []
 
   - bigbang_version: "2.45.0"
     flux_version: ">= 2.1.0"
@@ -52,5 +120,8 @@ version_matrix:
       gatekeeper: "3.13.0"
       neuvector: "5.2.2"
       prometheus_operator: "0.68.0"
+      monitoring: "56.0.0"
       grafana: "10.1.2"
       fluentbit: "2.1.9"
+    breaking_changes: []
+    deprecations: []

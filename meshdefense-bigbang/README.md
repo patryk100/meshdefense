@@ -65,3 +65,22 @@ python3 meshdefense-bigbang/scripts/artifact-harvester.py ingest \
   --project ironbank
 ```
 
+---
+
+## Story 6.1: Upstream Release Diff & Breaking Change Validation Utility
+
+The [`upstream-diff-validator.py`](file:///Users/patrykp/Projects/MeshDefense/meshdefense-bigbang/scripts/upstream-diff-validator.py) tool automates upstream Big Bang release comparison, extracting chart version bumps, parsing breaking structural changes and deprecations, and verifying Kubernetes / Flux compatibility prior to initiating cluster upgrades.
+
+### Interactive Terminal Report:
+```bash
+python3 meshdefense-bigbang/scripts/upstream-diff-validator.py --target 3.31.0
+```
+
+### CI/CD Quality Gate with Non-Zero Exit Code:
+```bash
+python3 meshdefense-bigbang/scripts/upstream-diff-validator.py \
+  --target 3.31.0 \
+  --fail-on-critical \
+  --output json > upgrade-risk-report.json
+```
+
