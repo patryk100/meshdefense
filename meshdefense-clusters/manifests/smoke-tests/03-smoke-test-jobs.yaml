@@ -1,0 +1,119 @@
+# ==============================================================================
+# Ephemeral Pre-Flight Smoke Test Job Definition (Story 6.2)
+# Executed prior to GitOps / Big Bang upgrade to validate current platform health
+# ==============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: platform-preflight-smoke-test
+  namespace: platform-tests
+  labels:
+    app.kubernetes.io/name: platform-smoke-tests
+    test.meshdefense.internal/stage: pre-flight
+spec:
+  ttlSecondsAfterFinished: 600 # Ephemeral: auto-cleans 10 mins after execution
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: platform-smoke-tests
+        test.meshdefense.internal/stage: pre-flight
+    spec:
+      serviceAccountName: platform-smoke-test-runner
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: smoke-test-runner
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TEST_STAGE
+              value: "PRE_FLIGHT"
+          command:
+            - /bin/bash
+            - /scripts/run-smoke-tests.sh
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: platform-smoke-test-script
+            defaultMode: 0755
+---
+# ==============================================================================
+# Ephemeral Post-Upgrade Smoke Test Job Definition (Story 6.2)
+# Executed immediately after GitOps / Big Bang sync to certify release stability
+# ==============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: platform-postupgrade-smoke-test
+  namespace: platform-tests
+  labels:
+    app.kubernetes.io/name: platform-smoke-tests
+    test.meshdefense.internal/stage: post-upgrade
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: platform-smoke-tests
+        test.meshdefense.internal/stage: post-upgrade
+    spec:
+      serviceAccountName: platform-smoke-test-runner
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: smoke-test-runner
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TEST_STAGE
+              value: "POST_UPGRADE"
+          command:
+            - /bin/bash
+            - /scripts/run-smoke-tests.sh
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: platform-smoke-test-script
+            defaultMode: 0755

@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform-tests
+  labels:
+    app.kubernetes.io/name: platform-tests
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: platform-smoke-test-runner
+  namespace: platform-tests
+  labels:
+    app.kubernetes.io/name: platform-smoke-tests
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-smoke-test-runner
+  labels:
+    app.kubernetes.io/name: platform-smoke-tests
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+      - pods
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - persistentvolumes
+      - secrets
+      - configmaps
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+    verbs: ["get", "list"]
+  - apiGroups: ["security.istio.io"]
+    resources:
+      - peerauthentications
+      - authorizationpolicies
+    verbs: ["get", "list"]
+  - apiGroups: ["networking.istio.io"]
+    resources:
+      - virtualservices
+      - gateways
+      - serviceentries
+    verbs: ["get", "list"]
+  - apiGroups: ["external-secrets.io"]
+    resources:
+      - externalsecrets
+      - secretstores
+      - clustersecretstores
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: platform-smoke-test-runner
+  labels:
+    app.kubernetes.io/name: platform-smoke-tests
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: platform-smoke-test-runner
+subjects:
+  - kind: ServiceAccount
+    name: platform-smoke-test-runner
+    namespace: platform-tests
+---
+# Zero-trust NetworkPolicy permitting platform test runner to probe services across cluster
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: platform-tests-allow-egress
+  namespace: platform-tests
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow probes to all cluster internal namespaces & ports
+    - to:
+        - namespaceSelector: {}
+---
+# Enforce Istio STRICT mTLS inside platform-tests
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: platform-tests-strict-mtls
+  namespace: platform-tests
+spec:
+  mtls:
+    mode: STRICT
