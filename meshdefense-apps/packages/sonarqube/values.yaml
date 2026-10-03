@@ -4,7 +4,7 @@
 
 image:
   repository: "registry.il6.meshdefense.internal/ironbank/sonarsource/sonarqube"
-  tag: "10.3.0-community"
+  tag: "10.5.1-community"
   pullSecrets:
     - name: "harbor-registry-secret"
 
@@ -16,7 +16,7 @@ postgresql:
   enabled: true
   image:
     repository: "registry.il6.meshdefense.internal/ironbank/opensource/postgres/postgresql"
-    tag: "15.5"
+    tag: "16.2"
 
 # Security & Istio integration
 securityContext:

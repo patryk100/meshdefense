@@ -5,7 +5,7 @@
 scanner:
   image:
     repository: "registry.il6.meshdefense.internal/ironbank/anchore/grype"
-    tag: "v0.74.0"
+    tag: "v0.77.0"
     pullSecrets:
       - name: "harbor-registry-secret"
 
