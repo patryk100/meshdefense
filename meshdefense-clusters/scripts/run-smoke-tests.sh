@@ -8,8 +8,11 @@ STAGE="${1:-pre-flight}" # pre-flight or post-upgrade
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFESTS_DIR="${SCRIPT_DIR}/../manifests/smoke-tests"
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
 echo "=============================================================================="
 echo " Running MeshDefense Smoke Test Suite: Stage [${STAGE}]"
+echo " AWS Account: ${AWS_ACCOUNT_ID} | Region: ${AWS_REGION} | Env: ${ENVIRONMENT}"
 echo "=============================================================================="
 
 # 1. Apply baseline RBAC, ConfigMap, and Namespace
@@ -23,11 +26,7 @@ kubectl delete job "${JOB_NAME}" -n platform-tests --ignore-not-found=true
 
 # 3. Trigger ephemeral test job
 echo "[*] Launching ephemeral test Job: ${JOB_NAME}..."
-if [ "${STAGE}" == "pre-flight" ] || [ "${STAGE}" == "PRE_FLIGHT" ]; then
-  kubectl apply -f "${MANIFESTS_DIR}/03-smoke-test-jobs.yaml"
-elif [ "${STAGE}" == "post-upgrade" ] || [ "${STAGE}" == "POST_UPGRADE" ]; then
-  kubectl apply -f "${MANIFESTS_DIR}/03-smoke-test-jobs.yaml"
-fi
+cat "${MANIFESTS_DIR}/03-smoke-test-jobs.yaml" | apply_parameterized_manifest | kubectl apply -f -
 
 # 4. Wait for Job execution
 echo "[*] Awaiting Job completion (timeout 90s)..."

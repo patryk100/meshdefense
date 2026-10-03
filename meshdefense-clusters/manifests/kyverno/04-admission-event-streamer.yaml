@@ -163,7 +163,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: streamer
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/eks/coredns:v1.11.4-eksbuild.2 # Reusing minimal scratch/al2023 base
+          image: ${REGISTRY_DOMAIN}/eks/coredns:v1.11.4-eksbuild.2 # Reusing minimal scratch/al2023 base
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
@@ -171,7 +171,7 @@ spec:
             - "python3 /opt/streamer/streamer.py || tail -f /dev/null"
           env:
             - name: ENCLAVE_ENVIRONMENT
-              value: "poc-minimal"
+              value: "${ENVIRONMENT}"
           resources:
             requests:
               cpu: 50m

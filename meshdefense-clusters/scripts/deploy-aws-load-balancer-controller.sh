@@ -10,8 +10,20 @@ MANIFESTS_DIR="${PROJECT_ROOT}/manifests"
 
 export KUBECONFIG="${KUBECONFIG:-/root/.kube/config}"
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+# Resolve VPC_ID dynamically if not set
+if [[ -z "${VPC_ID:-}" ]]; then
+  if command -v aws &> /dev/null; then
+    VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Environment,Values=${ENVIRONMENT}" --query "Vpcs[0].VpcId" --output text 2>/dev/null || echo "vpc-isolated")
+  fi
+  VPC_ID="${VPC_ID:-vpc-isolated}"
+fi
+export VPC_ID
+
 echo "===================================================================="
 echo "[*] Story 3.2: Deploying AWS Load Balancer Controller & Internal NLB"
+echo "    AWS Account: ${AWS_ACCOUNT_ID} | Region: ${AWS_REGION} | VPC: ${VPC_ID}"
 echo "===================================================================="
 
 # 1. Apply AWS Load Balancer Controller CRDs
@@ -21,7 +33,7 @@ kubectl apply -f "${MANIFESTS_DIR}/aws-load-balancer-controller/01-crds.yaml"
 # 2. Apply AWS Load Balancer Controller TLS Secret, RBAC & Deployment
 echo -e "\n[*] Step 2: Deploying AWS Load Balancer Controller with IRSA..."
 kubectl apply -f "${MANIFESTS_DIR}/aws-load-balancer-controller/00-tls-secret.yaml"
-kubectl apply -f "${MANIFESTS_DIR}/aws-load-balancer-controller/02-controller.yaml"
+cat "${MANIFESTS_DIR}/aws-load-balancer-controller/02-controller.yaml" | apply_parameterized_manifest | kubectl apply -f -
 
 # 3. Wait for AWS Load Balancer Controller to be ready
 echo -e "\n[*] Step 3: Waiting for AWS Load Balancer Controller rollout..."

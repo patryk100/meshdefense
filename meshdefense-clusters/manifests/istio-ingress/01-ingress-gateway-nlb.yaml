@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: istio-proxy
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/source-controller@sha256:dfeeb772a4e1451d6376dca28969144cc053b12bbe3d3e3535f91e66b5761a65
+          image: ${REGISTRY_DOMAIN}/fluxcd/source-controller@sha256:dfeeb772a4e1451d6376dca28969144cc053b12bbe3d3e3535f91e66b5761a65
           command:
             - /bin/sh
             - -c

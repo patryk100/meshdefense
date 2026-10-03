@@ -53,16 +53,16 @@ loki:
     create: true
     name: "loki"
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+      eks.amazonaws.com/role-arn: "arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging"
   config:
     auth_enabled: false
     server:
       http_listen_port: 3100
     storage_config:
       aws:
-        s3: "s3.us-east-1.amazonaws.com"
-        bucketnames: "meshdefense-poc-minimal-loki-logs-ju9q2f"
-        region: "us-east-1"
+        s3: "s3.${AWS_REGION}.amazonaws.com"
+        bucketnames: "meshdefense-${ENVIRONMENT}-loki-logs"
+        region: "${AWS_REGION}"
         insecure: false
         sse_encryption: true
       tsdb_shipper:
@@ -95,14 +95,14 @@ tempo:
     create: true
     name: "tempo"
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+      eks.amazonaws.com/role-arn: "arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging"
   storage:
     trace:
       backend: "s3"
       s3:
-        bucket: "meshdefense-poc-minimal-loki-logs-ju9q2f"
-        endpoint: "s3.us-east-1.amazonaws.com"
-        region: "us-east-1"
+        bucket: "meshdefense-${ENVIRONMENT}-loki-logs"
+        endpoint: "s3.${AWS_REGION}.amazonaws.com"
+        region: "${AWS_REGION}"
         insecure: false
   compactor:
     compaction:

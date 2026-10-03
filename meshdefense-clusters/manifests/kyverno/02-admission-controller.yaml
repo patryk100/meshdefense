@@ -274,7 +274,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: kyverno
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/kyverno/kyverno:v1.13.2
+          image: ${REGISTRY_DOMAIN}/kyverno/kyverno:v1.13.2
           imagePullPolicy: IfNotPresent
           args:
             - --admissionReports=true

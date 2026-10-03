@@ -237,7 +237,7 @@ spec:
             - "registry.il6.meshdefense.internal/*"
             - "harbor.apps.*"
             - "registry1.dso.mil/ironbank/*"
-            - "123456789012.dkr.ecr.us-east-1.amazonaws.com/*"
+            - "${REGISTRY_DOMAIN}/*"
           attestors:
             - entries:
                 - keys:

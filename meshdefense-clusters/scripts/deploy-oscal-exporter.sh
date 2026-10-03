@@ -5,10 +5,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MANIFESTS_DIR="${SCRIPT_DIR}/../manifests/cato-oscal-exporter"
+source "${SCRIPT_DIR}/meshdefense-env.sh"
 
 echo "=== Deploying Automated OSCAL Exporter Pipeline ==="
-kubectl apply -k "${MANIFESTS_DIR}"
+echo "    AWS Account: ${AWS_ACCOUNT_ID} | Region: ${AWS_REGION} | Env: ${ENVIRONMENT}"
+kubectl kustomize "${MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 echo "=== Triggering Manual OSCAL Assessment Run ==="
 kubectl create job --from=cronjob/oscal-exporter oscal-manual-run-$(date +%s) -n cato || true

@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: flux-system
     app.kubernetes.io/part-of: flux
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-flux
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-flux
   name: helm-controller
   namespace: flux-system
 ---
@@ -38,7 +38,7 @@ metadata:
     app.kubernetes.io/instance: flux-system
     app.kubernetes.io/part-of: flux
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-flux
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-flux
   name: kustomize-controller
   namespace: flux-system
 ---
@@ -60,7 +60,7 @@ metadata:
     app.kubernetes.io/instance: flux-system
     app.kubernetes.io/part-of: flux
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-flux
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-flux
   name: source-controller
   namespace: flux-system
 ---
@@ -361,7 +361,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/helm-controller:v1.1.0
+        image: ${REGISTRY_DOMAIN}/fluxcd/helm-controller:v1.1.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -452,7 +452,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/image-automation-controller:v0.39.0
+        image: ${REGISTRY_DOMAIN}/fluxcd/image-automation-controller:v0.39.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -542,7 +542,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/image-reflector-controller:v0.33.0
+        image: ${REGISTRY_DOMAIN}/fluxcd/image-reflector-controller:v0.33.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -636,7 +636,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/kustomize-controller:v1.4.0
+        image: ${REGISTRY_DOMAIN}/fluxcd/kustomize-controller:v1.4.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -726,7 +726,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/notification-controller:v1.4.0
+        image: ${REGISTRY_DOMAIN}/fluxcd/notification-controller:v1.4.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -828,7 +828,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fluxcd/source-controller:v1.4.1
+        image: ${REGISTRY_DOMAIN}/fluxcd/source-controller:v1.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

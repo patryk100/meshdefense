@@ -19,7 +19,7 @@ metadata:
     app.kubernetes.io/part-of: monitoring
   annotations:
     # AWS IRSA Logging Role for S3 GovCloud persistence
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -39,7 +39,7 @@ metadata:
     app.kubernetes.io/name: tempo
     app.kubernetes.io/part-of: monitoring
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging
 ---
 apiVersion: v1
 kind: ServiceAccount

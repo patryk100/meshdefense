@@ -14,9 +14,12 @@ echo "===================================================================="
 
 export KUBECONFIG="${KUBECONFIG:-/root/.kube/config}"
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
 # Step 1: Deploy Cert-Manager core components & CRDs
 echo "[*] Step 1: Deploying Cert-Manager CRDs and controllers from private ECR..."
-kubectl apply -f "${REPO_ROOT}/manifests/cert-manager/01-cert-manager.yaml"
+echo "    Registry: ${REGISTRY_DOMAIN}"
+cat "${REPO_ROOT}/manifests/cert-manager/01-cert-manager.yaml" | apply_parameterized_manifest | kubectl apply -f -
 
 echo "[*] Step 2: Waiting for Cert-Manager pods to become ready..."
 kubectl rollout status deployment/cert-manager -n cert-manager --timeout=120s

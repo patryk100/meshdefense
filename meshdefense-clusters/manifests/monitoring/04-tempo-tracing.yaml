@@ -74,7 +74,7 @@ spec:
         runAsUser: 10001
       containers:
         - name: tempo
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/grafana/tempo:2.4.1
+          image: ${REGISTRY_DOMAIN}/ironbank/grafana/tempo:2.4.1
           imagePullPolicy: IfNotPresent
           args:
             - -config.file=/etc/tempo/tempo.yaml

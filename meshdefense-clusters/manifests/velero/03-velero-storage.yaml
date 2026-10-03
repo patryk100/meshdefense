@@ -9,11 +9,11 @@ metadata:
 spec:
   provider: aws
   objectStorage:
-    bucket: meshdefense-poc-minimal-velero-backups-ju9q2f
+    bucket: meshdefense-${ENVIRONMENT}-velero-backups
     prefix: backups
   config:
-    region: us-east-1
-    kmsKeyId: arn:aws:kms:us-east-1:123456789012:key/757b6030-0936-4ec6-ae7a-caa588d93d86
+    region: ${AWS_REGION}
+    kmsKeyId: "arn:${AWS_PARTITION:-aws}:kms:${AWS_REGION}:${AWS_ACCOUNT_ID}:alias/meshdefense-${ENVIRONMENT}-s3"
     serverSideEncryption: aws:kms
 ---
 apiVersion: velero.io/v1
@@ -27,4 +27,4 @@ metadata:
 spec:
   provider: aws
   config:
-    region: us-east-1
+    region: ${AWS_REGION}

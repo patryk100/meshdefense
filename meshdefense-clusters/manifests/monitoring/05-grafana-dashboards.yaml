@@ -149,7 +149,7 @@ spec:
         runAsUser: 472
       containers:
         - name: grafana
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/grafana/grafana/grafana:10.4.3
+          image: ${REGISTRY_DOMAIN}/ironbank/grafana/grafana/grafana:10.4.3
           imagePullPolicy: IfNotPresent
           env:
             - name: GF_SECURITY_ADMIN_USER

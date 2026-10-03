@@ -28,7 +28,7 @@ spec:
         fsGroup: 10001
       containers:
         - name: smoke-test-runner
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          image: ${REGISTRY_DOMAIN}/ironbank/opensource/kubernetes/kubectl:v1.30.0
           imagePullPolicy: IfNotPresent
           env:
             - name: TEST_STAGE
@@ -88,7 +88,7 @@ spec:
         fsGroup: 10001
       containers:
         - name: smoke-test-runner
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          image: ${REGISTRY_DOMAIN}/ironbank/opensource/kubernetes/kubectl:v1.30.0
           imagePullPolicy: IfNotPresent
           env:
             - name: TEST_STAGE

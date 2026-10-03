@@ -18,7 +18,7 @@ admissionController:
     name: kyverno-admission-controller
   container:
     image:
-      registry: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+      registry: ${REGISTRY_DOMAIN}
       repository: kyverno/kyverno
       tag: v1.13.2
     resources:

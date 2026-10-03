@@ -16,7 +16,7 @@ metadata:
   namespace: vault
   annotations:
     # IRSA role allowing Vault to call KMS Encrypt/Decrypt/DescribeKey via VPC Endpoint
-    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-vault"
+    eks.amazonaws.com/role-arn: "arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-vault"
 ---
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication

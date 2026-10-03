@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/version: "v2.11.0"
     app.kubernetes.io/managed-by: Helm
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-external-secrets
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-external-secrets
 
 ---
 # Source: external-secrets/templates/rbac.yaml
@@ -431,7 +431,7 @@ spec:
             runAsUser: 1000
             seccompProfile:
               type: RuntimeDefault
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/external-secrets/external-secrets:v0.14.3
+          image: ${REGISTRY_DOMAIN}/external-secrets/external-secrets:v0.14.3
           imagePullPolicy: IfNotPresent
           args:
           - --concurrent=1

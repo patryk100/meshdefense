@@ -21,6 +21,8 @@ provider "aws" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 # --------------------------------------------------------------------------------------------------
 # 1. Customer Managed KMS Keys with Automated Rotation (NIST 800-53 SC-12 / SC-13)
 # --------------------------------------------------------------------------------------------------
@@ -32,11 +34,10 @@ module "kms_network" {
   description  = "MeshDefense Customer Managed Key for VPC Flow Logs and Network Telemetry"
   service_type = "cloudwatch"
   admin_principals = [
-    "arn:aws:iam::123456789012:root",
-    "arn:aws:iam::123456789012:user/terraform-user"
+    "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
   ]
   key_users = [
-    "arn:aws:iam::123456789012:user/terraform-user"
+    "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
   ]
   tags = {
     Role       = "Network-Telemetry-Encryption"

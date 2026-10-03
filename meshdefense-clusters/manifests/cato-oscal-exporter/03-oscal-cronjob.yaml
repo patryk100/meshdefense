@@ -33,7 +33,7 @@ spec:
             fsGroup: 10001
           containers:
             - name: oscal-exporter
-              image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+              image: ${REGISTRY_DOMAIN}/ironbank/opensource/kubernetes/kubectl:v1.30.0
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash
@@ -86,7 +86,7 @@ spec:
         fsGroup: 10001
       containers:
         - name: oscal-exporter
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          image: ${REGISTRY_DOMAIN}/ironbank/opensource/kubernetes/kubectl:v1.30.0
           imagePullPolicy: IfNotPresent
           command:
             - /bin/bash

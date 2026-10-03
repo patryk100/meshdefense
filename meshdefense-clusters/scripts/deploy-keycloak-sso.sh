@@ -24,24 +24,31 @@ if ! command -v kubectl &> /dev/null; then
   exit 1
 fi
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+echo -e "    AWS Account: ${GREEN}${AWS_ACCOUNT_ID}${NC} | Region: ${GREEN}${AWS_REGION}${NC} | Env: ${GREEN}${ENVIRONMENT}${NC}"
+
 KEYCLOAK_MANIFESTS_DIR="${REPO_ROOT}/meshdefense-clusters/manifests/keycloak"
 
 # Step 1: Apply Keycloak RBAC, NetworkPolicies, Secrets, and Realm ConfigMap
 echo -e "[*] Step 1: Applying Keycloak namespace, RBAC, NetworkPolicies, and Realm..."
-kubectl apply -k "${KEYCLOAK_MANIFESTS_DIR}"
+kubectl kustomize "${KEYCLOAK_MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 # Step 2: Deploy Keycloak via Helm
 echo -e "[*] Step 2: Deploying Keycloak Helm chart with external RDS & Realm Auto-import..."
 if command -v helm &> /dev/null; then
-  VALUES_FILE="${KEYCLOAK_MANIFESTS_DIR}/keycloak-values-rds-production.yaml"
-  echo -e "    Using values file: ${VALUES_FILE}"
+  RAW_VALUES_FILE="${KEYCLOAK_MANIFESTS_DIR}/keycloak-values-rds-production.yaml"
+  RENDERED_VALUES=$(mktemp)
+  trap 'rm -f "${RENDERED_VALUES}"' EXIT
+  cat "${RAW_VALUES_FILE}" | apply_parameterized_manifest > "${RENDERED_VALUES}"
+  echo -e "    Using rendered values file: ${RENDERED_VALUES}"
   
   helm repo add bitnami https://charts.bitnami.com/bitnami --force-update > /dev/null 2>&1 || true
   helm repo update bitnami > /dev/null 2>&1 || true
 
   helm upgrade --install keycloak bitnami/keycloak \
     --namespace keycloak \
-    --values "${VALUES_FILE}" \
+    --values "${RENDERED_VALUES}" \
     --timeout 10m \
     --wait=false || echo -e "${YELLOW}[!] Helm install queued. Verify rollout via kubectl.${NC}"
 fi

@@ -29,26 +29,33 @@ if ! command -v kubectl &> /dev/null; then
   exit 1
 fi
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+echo -e "    AWS Account: ${GREEN}${AWS_ACCOUNT_ID}${NC} | Region: ${GREEN}${AWS_REGION}${NC} | Env: ${GREEN}${ENVIRONMENT}${NC}"
+
 HARBOR_MANIFESTS_DIR="${REPO_ROOT}/meshdefense-clusters/manifests/harbor"
 
 # Step 1: Create namespace and apply Harbor baseline security resources
 echo -e "[*] Step 1: Applying Harbor security baseline resources & policies..."
 kubectl create namespace harbor --dry-run=client -o yaml | kubectl apply -f -
 kubectl label namespace harbor istio-injection=enabled --overwrite || true
-kubectl apply -k "${HARBOR_MANIFESTS_DIR}"
+kubectl kustomize "${HARBOR_MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 # Step 2: Deploy or Upgrade Harbor with S3 Backend & Security Integrations
 echo -e "[*] Step 2: Configuring Harbor values with S3 storage, Keycloak OIDC, and Trivy..."
 if command -v helm &> /dev/null; then
-  VALUES_FILE="${HARBOR_MANIFESTS_DIR}/harbor-values-s3-production.yaml"
-  echo -e "    Using production values profile: ${VALUES_FILE}"
+  RAW_VALUES_FILE="${HARBOR_MANIFESTS_DIR}/harbor-values-s3-production.yaml"
+  RENDERED_VALUES=$(mktemp)
+  trap 'rm -f "${RENDERED_VALUES}"' EXIT
+  cat "${RAW_VALUES_FILE}" | apply_parameterized_manifest > "${RENDERED_VALUES}"
+  echo -e "    Using rendered production values profile"
   
   helm repo add harbor https://helm.goharbor.io --force-update > /dev/null 2>&1 || true
   helm repo update harbor > /dev/null 2>&1 || true
 
   helm upgrade --install harbor harbor/harbor \
     --namespace harbor \
-    --values "${VALUES_FILE}" \
+    --values "${RENDERED_VALUES}" \
     --timeout 10m \
     --wait=false || echo -e "${YELLOW}[!] Helm install queued. Verify rollout via kubectl.${NC}"
 fi

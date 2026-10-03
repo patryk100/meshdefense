@@ -14,7 +14,7 @@ serviceAccount:
   create: true
   name: "vector"
   annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+    eks.amazonaws.com/role-arn: "arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging"
 
 securityContext:
   runAsUser: 0

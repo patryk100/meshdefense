@@ -24,25 +24,25 @@ serviceAccount:
     create: true
     name: "velero"
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-irsa-velero"
+      eks.amazonaws.com/role-arn: "arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-irsa-velero"
 
 # Primary Backup Storage Location (Private S3 Bucket with SSE-KMS)
 configuration:
   backupStorageLocation:
     - name: "default"
       provider: "aws"
-      bucket: "meshdefense-poc-minimal-velero-backups-ju9q2f"
+      bucket: "meshdefense-${ENVIRONMENT}-velero-backups"
       prefix: "backups"
       config:
-        region: "us-east-1"
-        kmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/757b6030-0936-4ec6-ae7a-caa588d93d86"
+        region: "${AWS_REGION}"
+        kmsKeyId: "arn:${AWS_PARTITION:-aws}:kms:${AWS_REGION}:${AWS_ACCOUNT_ID}:alias/meshdefense-${ENVIRONMENT}-s3"
         serverSideEncryption: "aws:kms"
   # Native EBS Volume Snapshot Location
   volumeSnapshotLocation:
     - name: "default"
       provider: "aws"
       config:
-        region: "us-east-1"
+        region: "${AWS_REGION}"
   features: "EnableCSI"
   uploaderType: "kopia"
 

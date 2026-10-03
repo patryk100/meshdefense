@@ -14,7 +14,7 @@ global:
 injector:
   enabled: true
   image:
-    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/vault-k8s"
+    repository: "${REGISTRY_DOMAIN}/meshdefense-${ENVIRONMENT}-harbor/vault-k8s"
     tag: "1.4.1"
   resources:
     requests:
@@ -26,7 +26,7 @@ injector:
 
 server:
   image:
-    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/vault"
+    repository: "${REGISTRY_DOMAIN}/meshdefense-${ENVIRONMENT}-harbor/vault"
     tag: "1.16.2"
 
   serviceAccount:
@@ -60,9 +60,8 @@ server:
         # Communicates directly with AWS KMS via the private VPC endpoint
         # ----------------------------------------------------------------------
         seal "awskms" {
-          region     = "us-east-1"
-          kms_key_id = "arn:aws:kms:us-east-1:123456789012:alias/meshdefense-poc-minimal-secrets"
-          endpoint   = "https://vpce-03618bf5d70b4b209-4hwwa27w.kms.us-east-1.vpce.amazonaws.com"
+          region     = "${AWS_REGION}"
+          kms_key_id = "arn:${AWS_PARTITION:-aws}:kms:${AWS_REGION}:${AWS_ACCOUNT_ID}:alias/meshdefense-${ENVIRONMENT}-secrets"
         }
 
   dataStorage:

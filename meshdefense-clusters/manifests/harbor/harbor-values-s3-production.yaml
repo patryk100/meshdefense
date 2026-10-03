@@ -9,7 +9,7 @@ expose:
   tls:
     enabled: false # TLS terminated at Istio Perimeter Gateway with Cert-Manager cert
 
-externalURL: https://harbor.apps.poc-minimal.il6.meshdefense.internal
+externalURL: https://harbor.apps.${ENVIRONMENT}.il6.meshdefense.internal
 
 # ------------------------------------------------------------------------------
 # 1. AWS S3 Storage Backend with SSE-KMS Encryption (NIST 800-53 SC-13, SC-28)
@@ -21,10 +21,10 @@ persistence:
     type: s3
     disableredirect: true # Enforce all blob transfers proxy through private VPC endpoints
     s3:
-      region: us-east-1
-      bucket: meshdefense-poc-minimal-harbor-blobs
+      region: ${AWS_REGION}
+      bucket: meshdefense-${ENVIRONMENT}-harbor-blobs
       # For air-gapped AWS VPC: using in-cluster STS/IRSA or private S3 endpoint
-      regionendpoint: https://s3.us-east-1.amazonaws.com
+      regionendpoint: https://s3.${AWS_REGION}.amazonaws.com
       encrypt: true
       secure: true
       v4auth: true
@@ -35,10 +35,10 @@ persistence:
 # ------------------------------------------------------------------------------
 # Automatically configures Harbor Core to federate authentication with Keycloak
 # Realm: baby-yoda / meshdefense
-# Endpoint: https://keycloak.apps.poc-minimal.il6.meshdefense.internal/auth/realms/baby-yoda
+# Endpoint: https://keycloak.apps.${ENVIRONMENT}.il6.meshdefense.internal/auth/realms/baby-yoda
 oidc:
   name: "Keycloak-SSO"
-  endpoint: "https://keycloak.apps.poc-minimal.il6.meshdefense.internal/auth/realms/baby-yoda"
+  endpoint: "https://keycloak.apps.${ENVIRONMENT}.il6.meshdefense.internal/auth/realms/baby-yoda"
   clientID: "harbor-sso"
   clientSecret: "MeshDefenseKeycloakHarborSecret2026!"
   scope: "openid,profile,email,groups"

@@ -25,8 +25,12 @@ if ! command -v kubectl &> /dev/null; then
   exit 1
 fi
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+echo -e "    AWS Account: ${GREEN}${AWS_ACCOUNT_ID}${NC} | Region: ${GREEN}${AWS_REGION}${NC} | Env: ${GREEN}${ENVIRONMENT}${NC}"
+
 echo -e "[*] Step 1: Applying Velero CRDs, RBAC, StorageLocations, and Deployment..."
-kubectl apply -k "${MANIFESTS_DIR}"
+kubectl kustomize "${MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 echo -e "[*] Step 2: Verifying Velero ServiceAccount IRSA annotations..."
 SA_ROLE=$(kubectl get serviceaccount velero -n velero -o jsonpath='{.metadata.annotations.eks\.amazonaws\.com/role-arn}' 2>/dev/null || echo "None")

@@ -11,7 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MANIFESTS_DIR="${REPO_ROOT}/manifests/external-secrets"
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
 echo "==> Deploying External Secrets Operator to EKS..."
+echo "    AWS Account: ${AWS_ACCOUNT_ID} | Region: ${AWS_REGION} | Env: ${ENVIRONMENT}"
 
 # 1. Apply namespace
 echo "==> Applying namespace..."
@@ -23,7 +26,7 @@ kubectl apply -f "${MANIFESTS_DIR}/01-crds.yaml"
 
 # 3. Apply Operator manifests (Deployment, RBAC, IRSA ServiceAccount)
 echo "==> Applying Operator Deployment and RBAC..."
-kubectl apply -f "${MANIFESTS_DIR}/02-operator.yaml"
+cat "${MANIFESTS_DIR}/02-operator.yaml" | apply_parameterized_manifest | kubectl apply -f -
 
 # 4. Wait for controller deployment rollout
 echo "==> Waiting for External Secrets Operator deployment rollout..."

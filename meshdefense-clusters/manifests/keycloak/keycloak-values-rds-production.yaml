@@ -8,7 +8,7 @@
 # ==============================================================================
 
 image:
-  repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/keycloak"
+  repository: "${REGISTRY_DOMAIN}/meshdefense-${ENVIRONMENT}-harbor/keycloak"
   tag: "25.0.1"
 
 replicas: 2

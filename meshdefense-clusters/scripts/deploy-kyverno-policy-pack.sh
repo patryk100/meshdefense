@@ -24,6 +24,10 @@ if ! command -v kubectl &> /dev/null; then
   exit 1
 fi
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+echo -e "    AWS Account: ${GREEN}${AWS_ACCOUNT_ID}${NC} | Region: ${GREEN}${AWS_REGION}${NC} | Env: ${GREEN}${ENVIRONMENT}${NC}"
+
 KYVERNO_MANIFESTS_DIR="${REPO_ROOT}/meshdefense-clusters/manifests/kyverno"
 
 # Step 1: Install Kyverno CRDs
@@ -32,7 +36,7 @@ kubectl apply -f "${KYVERNO_MANIFESTS_DIR}/01-crds.yaml"
 
 # Step 2: Apply Admission Controller & Policy Pack via Kustomize
 echo -e "[*] Step 2: Applying Kyverno admission controller, event streamer, and policies..."
-kubectl apply -k "${KYVERNO_MANIFESTS_DIR}"
+kubectl kustomize "${KYVERNO_MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 # Step 3: Validate Policy Admission Rules
 echo -e "[*] Step 3: Verifying active NIST 800-53 ClusterPolicies..."

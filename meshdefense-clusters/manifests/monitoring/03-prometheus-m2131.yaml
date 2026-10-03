@@ -183,7 +183,7 @@ spec:
         runAsUser: 65534
       containers:
         - name: prometheus
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/prometheus/prometheus:v2.54.1
+          image: ${REGISTRY_DOMAIN}/ironbank/opensource/prometheus/prometheus:v2.54.1
           imagePullPolicy: IfNotPresent
           args:
             - --config.file=/etc/prometheus/prometheus.yml

@@ -100,7 +100,7 @@ spec:
       serviceAccountName: neuvector-controller
       containers:
         - name: neuvector-controller-pod
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/neuvector/controller:5.3.2
+          image: ${REGISTRY_DOMAIN}/ironbank/neuvector/controller:5.3.2
           imagePullPolicy: IfNotPresent
           env:
             - name: CLUSTER_JOIN_ADDR
@@ -149,7 +149,7 @@ spec:
       serviceAccountName: neuvector-manager
       containers:
         - name: neuvector-manager-pod
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/neuvector/manager:5.3.2
+          image: ${REGISTRY_DOMAIN}/ironbank/neuvector/manager:5.3.2
           imagePullPolicy: IfNotPresent
           env:
             - name: CTRL_SERVER_IP
@@ -200,7 +200,7 @@ spec:
           operator: Exists
       containers:
         - name: neuvector-enforcer-pod
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/neuvector/enforcer:5.3.2
+          image: ${REGISTRY_DOMAIN}/ironbank/neuvector/enforcer:5.3.2
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true

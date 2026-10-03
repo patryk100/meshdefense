@@ -19,7 +19,7 @@ metadata:
     app.kubernetes.io/part-of: logging
   annotations:
     # AWS IRSA Logging Role for S3 GovCloud persistence & CloudWatch logging
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-logging
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

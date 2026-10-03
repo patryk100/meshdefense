@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: aws-load-balancer-controller
     app.kubernetes.io/component: controller
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-aws-load-balancer-controller
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-eks-irsa-aws-load-balancer-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -90,12 +90,12 @@ spec:
       serviceAccountName: aws-load-balancer-controller
       containers:
         - name: controller
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/amazon/aws-load-balancer-controller:v2.8.2
+          image: ${REGISTRY_DOMAIN}/amazon/aws-load-balancer-controller:v2.8.2
           args:
-            - --cluster-name=meshdefense-poc-minimal-eks
+            - --cluster-name=${CLUSTER_NAME}
             - --ingress-class=alb
-            - --aws-region=us-east-1
-            - --aws-vpc-id=vpc-0689aad9b24e583f1
+            - --aws-region=${AWS_REGION}
+            - --aws-vpc-id=${VPC_ID}
             - --enable-shield=false
             - --enable-waf=false
             - --enable-wafv2=false

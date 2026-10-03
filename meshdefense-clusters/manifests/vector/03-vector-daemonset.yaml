@@ -33,7 +33,7 @@ spec:
         runAsNonRoot: false
       containers:
         - name: vector
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/timberio/vector:0.38.0-distroless-libc
+          image: ${REGISTRY_DOMAIN}/timberio/vector:0.38.0-distroless-libc
           imagePullPolicy: IfNotPresent
           args:
             - --config

@@ -4,7 +4,7 @@
 # Enforces real-time lateral movement blocking, process quarantine, and syslog/webhook
 # ==============================================================================
 
-registry: "123456789012.dkr.ecr.us-east-1.amazonaws.com"
+registry: "${REGISTRY_DOMAIN}"
 
 # Global Active Cyber Defense defaults
 global:

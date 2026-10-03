@@ -24,6 +24,10 @@ if ! command -v kubectl &> /dev/null; then
   exit 1
 fi
 
+source "${SCRIPT_DIR}/meshdefense-env.sh"
+
+echo -e "    AWS Account: ${GREEN}${AWS_ACCOUNT_ID}${NC} | Region: ${GREEN}${AWS_REGION}${NC} | Env: ${GREEN}${ENVIRONMENT}${NC}"
+
 NEUVECTOR_MANIFESTS_DIR="${REPO_ROOT}/meshdefense-clusters/manifests/neuvector"
 
 # Step 1: Install NeuVector CRDs
@@ -32,7 +36,7 @@ kubectl apply -f "${NEUVECTOR_MANIFESTS_DIR}/01-crds.yaml"
 
 # Step 2: Deploy Controller, Manager, Enforcer DaemonSet and ACD Policies
 echo -e "[*] Step 2: Applying NeuVector Controller, Manager, Enforcer DaemonSet, and ACD Policies..."
-kubectl apply -k "${NEUVECTOR_MANIFESTS_DIR}"
+kubectl kustomize "${NEUVECTOR_MANIFESTS_DIR}" | apply_parameterized_manifest | kubectl apply -f -
 
 # Step 3: Verify Enforcer DaemonSet and ACD Rules
 echo -e "[*] Step 3: Verifying NeuVector components and Active Cyber Defense rules..."

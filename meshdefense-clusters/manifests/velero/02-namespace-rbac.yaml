@@ -15,7 +15,7 @@ metadata:
   labels:
     app.kubernetes.io/name: velero
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-irsa-velero
+    eks.amazonaws.com/role-arn: arn:${AWS_PARTITION:-aws}:iam::${AWS_ACCOUNT_ID}:role/meshdefense-${ENVIRONMENT}-irsa-velero
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
