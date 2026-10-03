@@ -1,9 +1,9 @@
 # --------------------------------------------------------------------------------------------------
-# MeshDefense Scoped Kyverno PolicyExceptions (v2beta1): tenant-telemetry
+# MeshDefense Scoped Kyverno PolicyExceptions (v2): tenant-telemetry
 # Authorized granular exemptions for specialized workloads (NIST 800-53 CM-7)
 # --------------------------------------------------------------------------------------------------
 ---
-apiVersion: kyverno.io/v2beta1
+apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: telemetry-analytics-exception-1

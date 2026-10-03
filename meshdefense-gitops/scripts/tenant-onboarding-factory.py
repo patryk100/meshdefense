@@ -7,7 +7,7 @@ service account, namespace, resource quotas, and egress rules) and automatically
   1. Hardened Tenant Namespace (with Restricted Pod Security Standard & Istio injection labels)
   2. STRICT mTLS Istio PeerAuthentication (NIST 800-53 SC-8)
   3. Istio Egress ServiceEntry manifests for authorized egress destinations
-  4. Kyverno Policy Exceptions (PolicyException CRD v2beta1)
+  4. Kyverno Policy Exceptions (PolicyException CRD v2)
   5. Scoped AWS IRSA IAM Role Terraform configuration for AWS STS WebIdentity authentication
   6. Ingress Certificate & Gateway configuration (Cert-Manager ECDSA-256)
   7. Compute ResourceQuota & LimitRange governance policies
@@ -382,7 +382,7 @@ def generate_kyverno_exceptions_manifest(tenant_meta: dict, exceptions: list) ->
 
     manifests = [
         f"# --------------------------------------------------------------------------------------------------\n"
-        f"# MeshDefense Scoped Kyverno PolicyExceptions (v2beta1): {ns}\n"
+        f"# MeshDefense Scoped Kyverno PolicyExceptions (v2): {ns}\n"
         f"# Authorized granular exemptions for specialized workloads (NIST 800-53 CM-7)\n"
         f"# --------------------------------------------------------------------------------------------------"
     ]
@@ -397,7 +397,7 @@ def generate_kyverno_exceptions_manifest(tenant_meta: dict, exceptions: list) ->
 
         rules_yaml = "\n".join([f"          - \"{r}\"" for r in rule_names])
 
-        doc = f"""apiVersion: kyverno.io/v2beta1
+        doc = f"""apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: {name}-exception-{idx + 1}

@@ -26,13 +26,13 @@ if [[ -z "${AWS_REGION:-}" ]]; then
 fi
 export AWS_REGION
 
-# 3. AWS Partition resolution (aws, aws-us-gov, or aws-iso/aws-iso-b for IL6/SC)
+# 3. AWS Partition resolution (aws, aws-us-gov, aws-iso, or aws-iso-b for IL6/SC)
 if [[ -z "${AWS_PARTITION:-}" ]]; then
   case "${AWS_REGION}" in
     us-gov-*)
       AWS_PARTITION="aws-us-gov"
       ;;
-    *-iso-b-*|us-isob-*)
+    *-isob-*|us-isob-*|*-iso-b-*)
       AWS_PARTITION="aws-iso-b"
       ;;
     *-iso-*)

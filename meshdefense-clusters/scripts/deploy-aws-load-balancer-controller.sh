@@ -41,7 +41,7 @@ kubectl rollout status deployment/aws-load-balancer-controller -n kube-system --
 
 # 4. Deploy Istio Ingress Gateway & Internal NLB Service
 echo -e "\n[*] Step 4: Deploying Istio Ingress Gateway with internal NLB targeting private subnets..."
-kubectl apply -f "${MANIFESTS_DIR}/istio-ingress/01-ingress-gateway-nlb.yaml"
+cat "${MANIFESTS_DIR}/istio-ingress/01-ingress-gateway-nlb.yaml" | apply_parameterized_manifest | kubectl apply -f -
 
 # 5. Wait for NLB Service to acquire internal hostname/IP
 echo -e "\n[*] Step 5: Waiting for internal NLB provisioning..."

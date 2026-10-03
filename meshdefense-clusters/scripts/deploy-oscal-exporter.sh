@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MANIFESTS_DIR="${SCRIPT_DIR}/../manifests/cato-oscal-exporter"
 source "${SCRIPT_DIR}/meshdefense-env.sh"
 
 echo "=== Deploying Automated OSCAL Exporter Pipeline ==="

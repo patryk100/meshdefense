@@ -58,7 +58,6 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-type: "external"
     service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
     service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
-    service.beta.kubernetes.io/aws-load-balancer-subnets: "subnet-0c87813d70c679910, subnet-05e1a10068e33cbe8"
     service.beta.kubernetes.io/aws-load-balancer-attributes: "deletion_protection.enabled=false"
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
   labels:
