@@ -9,10 +9,12 @@ Keycloak serves as the centralized identity provider and Single Sign-On (SSO) ga
   - **Grafana** (`grafana-sso`)
   - **GitLab** (`gitlab-sso`)
   - **NeuVector** (`neuvector-sso`)
-- **Zero-Trust Network Hardening**: Namespace enforced with Pod Security Standard `restricted`, `STRICT` mTLS, and egress locked to in-cluster DNS and RDS port 5432.
+- **Hardware Security Tokens (FIDO2 / WebAuthn)**: Configured WebAuthn policy enforcing YubiKey 5 FIPS hardware security keys (`webAuthnPolicyPasswordlessRequireResidentKey: Yes`) for SCIF engineers operating without mobile devices or SMS/TOTP.
+- **Local Break-Glass Identity**: Sealed emergency recovery path (`breakglass-admin` / `emergency-breakglass-admin`) for offline disaster recovery and SCIF access (NIST 800-53 IA-2(1), IA-2(2)).
 
 ### Deployment & Validation
 ```bash
 meshdefense-clusters/scripts/deploy-keycloak-sso.sh
 ```
+
 

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: emergency-breakglass-vault-token
+  namespace: keycloak
+type: Opaque
+stringData:
+  # Sealed emergency administrator recovery payload for SCIF facilities
+  BREAKGLASS_USERNAME: "breakglass-admin"
+  BREAKGLASS_ROLE: "emergency-breakglass-admin"
+  BREAKGLASS_FACILITY: "SCIF-ROOM-4A"
+  BREAKGLASS_RECOVERY_KEY: "MeshDefenseScifBreakGlass2026!#Secure"
+  BREAKGLASS_AUDIT_LOG_NOTE: "NIST 800-53 IA-2(1) / IA-2(2) Emergency Local Breakglass Ingress - SCIF Mode"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fido2-webauthn-security-policy
+  namespace: keycloak
+data:
+  fido2-policy.json: |
+    {
+      "fido2_hardware_enforcement": {
+        "status": "active",
+        "supported_keys": ["YubiKey 5 Series", "YubiKey 5 FIPS", "YubiKey Bio", "Titan Security Key"],
+        "protocols": ["FIDO2", "WebAuthn"],
+        "user_verification": "preferred",
+        "scif_policy": "NIST 800-53 IA-2(1) Multi-Factor Authentication without Mobile Devices"
+      }
+    }

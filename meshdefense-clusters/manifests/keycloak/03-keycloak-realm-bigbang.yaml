@@ -19,11 +19,32 @@ data:
       "bruteForceProtected": true,
       "failureFactor": 3,
       "maxDeltaTimeSeconds": 900,
+      "webAuthnPolicyRpEntityName": "MeshDefense Enclave Authenticator",
+      "webAuthnPolicySignatureAlgorithms": ["ES256", "RS256"],
+      "webAuthnPolicyRpId": "apps.poc-minimal.il6.meshdefense.internal",
+      "webAuthnPolicyAttestationConveyancePreference": "direct",
+      "webAuthnPolicyAuthenticatorAttachment": "cross-platform",
+      "webAuthnPolicyRequireResidentKey": "No",
+      "webAuthnPolicyUserVerificationRequirement": "preferred",
+      "webAuthnPolicyCreateTimeout": 60,
+      "webAuthnPolicyAvoidSameAuthenticatorRegister": true,
+      "webAuthnPolicyAcceptableAaguids": [],
+      "webAuthnPolicyPasswordlessRpEntityName": "MeshDefense Passwordless Token",
+      "webAuthnPolicyPasswordlessSignatureAlgorithms": ["ES256", "RS256"],
+      "webAuthnPolicyPasswordlessRpId": "apps.poc-minimal.il6.meshdefense.internal",
+      "webAuthnPolicyPasswordlessAttestationConveyancePreference": "direct",
+      "webAuthnPolicyPasswordlessAuthenticatorAttachment": "cross-platform",
+      "webAuthnPolicyPasswordlessRequireResidentKey": "Yes",
+      "webAuthnPolicyPasswordlessUserVerificationRequirement": "required",
+      "webAuthnPolicyPasswordlessCreateTimeout": 60,
+      "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": true,
+      "webAuthnPolicyPasswordlessAcceptableAaguids": [],
       "roles": {
         "realm": [
           {"name": "platform-administrators", "description": "Full platform administration across all Big Bang tooling"},
           {"name": "platform-operators", "description": "Read and operation access to telemetry and pipelines"},
-          {"name": "security-auditors", "description": "Audit and compliance oversight role"}
+          {"name": "security-auditors", "description": "Audit and compliance oversight role"},
+          {"name": "emergency-breakglass-admin", "description": "Emergency break-glass administrator access inside SCIF"}
         ]
       },
       "groups": [
@@ -36,6 +57,67 @@ data:
           "name": "security-auditors",
           "path": "/security-auditors",
           "realmRoles": ["security-auditors"]
+        },
+        {
+          "name": "breakglass-administrators",
+          "path": "/breakglass-administrators",
+          "realmRoles": ["platform-administrators", "emergency-breakglass-admin"]
+        }
+      ],
+      "users": [
+        {
+          "username": "breakglass-admin",
+          "enabled": true,
+          "email": "breakglass@meshdefense.internal",
+          "firstName": "Emergency",
+          "lastName": "BreakGlass",
+          "emailVerified": true,
+          "credentials": [
+            {
+              "type": "password",
+              "value": "MeshDefenseScifBreakGlass2026!#Secure",
+              "temporary": false
+            }
+          ],
+          "realmRoles": ["platform-administrators", "emergency-breakglass-admin"],
+          "groups": ["/breakglass-administrators"],
+          "attributes": {
+            "scif_facility": ["SCIF-ROOM-4A"],
+            "authorization_level": ["TOP-SECRET-IL6"],
+            "mfa_method": ["FIDO2-YubiKey-HardwareToken"]
+          }
+        }
+      ],
+      "authenticationFlows": [
+        {
+          "alias": "SCIF-FIDO2-WebAuthn-Flow",
+          "description": "Enforces FIDO2 / WebAuthn Hardware Security Keys for SCIF operators",
+          "providerId": "basic-flow",
+          "topLevel": true,
+          "builtIn": false,
+          "authenticationExecutions": [
+            {
+              "authenticator": "auth-cookie",
+              "requirement": "ALTERNATIVE",
+              "priority": 10,
+              "userSetupAllowed": false,
+              "autheticatorFlow": false
+            },
+            {
+              "authenticator": "webauthn-authenticator",
+              "requirement": "ALTERNATIVE",
+              "priority": 20,
+              "userSetupAllowed": true,
+              "autheticatorFlow": false
+            },
+            {
+              "authenticator": "auth-username-password-form",
+              "requirement": "ALTERNATIVE",
+              "priority": 30,
+              "userSetupAllowed": false,
+              "autheticatorFlow": false
+            }
+          ]
         }
       ],
       "clients": [

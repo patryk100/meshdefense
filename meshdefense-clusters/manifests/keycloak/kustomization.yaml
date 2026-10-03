@@ -7,3 +7,4 @@ resources:
   - 01-keycloak-rbac-netpol.yaml
   - 02-keycloak-secrets-tls.yaml
   - 03-keycloak-realm-bigbang.yaml
+  - 04-breakglass-fido2-policy.yaml
