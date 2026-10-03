@@ -1,95 +1,122 @@
 # meshdefense-clusters (Infrastructure as Code & Cloud Enclave Engine)
 
-This repository contains the Terraform Infrastructure as Code (IaC) modules and environment blueprints for provisioning air-gapped, STIG-compliant cloud Kubernetes enclaves capable of hosting Platform One's **Big Bang** across **DoD Impact Level 6 (IL6)** and Secret/Top-Secret cloud regions:
+The `meshdefense-clusters` repository provides modular, STIG-compliant Terraform Infrastructure as Code (IaC) modules and declarative Kubernetes manifests designed to provision and operate air-gapped Kubernetes enclaves.
 
-- **AWS EKS** (AWS GovCloud / AWS Secret Region / Commercial Cloud Services IL6)
-- **Azure AKS** (Azure Government Secret IL6)
-- **GCP GKE** (Google Distributed Cloud Hosted / Google Cloud for Government IL6)
+It targets classified, disconnected defense environments across:
+- **AWS EKS**: AWS GovCloud, AWS Secret Region, and Commercial Cloud Services (DoD IL6 / ISOB)
+- **Azure AKS**: Azure Government Secret (DoD IL6)
+- **GCP GKE**: Google Distributed Cloud Hosted / Google Cloud for Government
 
 ---
 
-## 🏛 Module Architecture & Capability Map
+## 📁 Repository Structure & Contents
 
 ```
 meshdefense-clusters/
 ├── modules/
-│   ├── vpc-isolated/         # Story 1.1: Multi-AZ private VPC, zero IGW, VPC Endpoints (SC-7)
-│   ├── kms-keyring/          # Story 1.2: 6 dedicated cryptographic domain CMKs (SC-12, SC-13)
-│   ├── bastion-jumpbox/      # Story 1.3: SSM Session Manager bastion with S3/CW audit logging (AC-3)
-│   ├── s3-storage-baseline/  # Story 1.4: Air-gapped S3 buckets with SSE-KMS & TLS 1.2+ (SC-28)
-│   ├── rds-postgresql/       # Story 1.5: Multi-AZ RDS PostgreSQL with TLS 1.2+ & IAM auth (CP-9)
-│   ├── kubernetes-eks/       # Story 2.1 & 2.2: Private EKS control plane, IMDSv2, Chrony Amazon Time Sync
-│   ├── irsa-factory/         # Story 2.3 & 4.8: Granular IAM Roles for Service Accounts (IRSA)
-│   ├── airgap-registry/      # Story 3.1: Day-0 Seed ECR repositories with KMS encryption
-│   ├── networking-pki/       # Private Route53 DNS, internal PKI endpoints
+│   ├── vpc-isolated/         # Isolated Multi-AZ VPC (zero default IGWs, private subnets, VPC Endpoints)
+│   ├── kms-keyring/          # Dedicated 6-CMK cryptographic domain keyring (automated annual rotation)
+│   ├── bastion-jumpbox/      # Ephemeral SSM-only administrative jumpbox with S3/CW session audit logging
+│   ├── s3-storage-baseline/  # Hardened S3 object storage buckets with SSE-KMS and TLS 1.2+ enforcement
+│   ├── rds-postgresql/       # Multi-AZ RDS PostgreSQL with SSL enforcement and IAM authentication
+│   ├── kubernetes-eks/       # Private EKS control plane, IMDSv2 enforcement, and Chrony time sync
+│   ├── irsa-factory/         # Automated least-privilege IAM Roles for Service Accounts (IRSA)
+│   ├── airgap-registry/      # Day-0 bootstrap ECR container repositories with KMS encryption
+│   ├── networking-pki/       # Private Route 53 DNS and internal PKI interface endpoints
 │   ├── kubernetes-aks/       # Azure AKS government baseline (FIPS 140-2)
 │   └── kubernetes-gke/       # GCP GKE government baseline (Shielded nodes, CMEK)
 ├── environments/
-│   ├── poc-cloud-minimal/    # Low-cost single-node / burstable cloud testing environment
+│   ├── poc-cloud-minimal/    # Cost-effective, minimal single-node cloud testing environment
 │   ├── dev/                  # Development enclave
 │   ├── test/                 # Integration test enclave
 │   ├── stg/                  # Staging enclave (production parity)
 │   └── prod/                 # Full production enclave (Multi-AZ HA, strict audit logging)
 ├── manifests/
-│   ├── aws-load-balancer-controller/ # Story 3.2: Air-gapped NLB controller manifests
-│   ├── cato-oscal-exporter/          # Story 5.6: Automated OSCAL compliance exporter CronJob
-│   ├── external-secrets/             # Story 2.4: External Secrets Operator and ClusterSecretStores
-│   ├── flux-system/                  # Story 2.5: Flux v2 controllers and GitOps sync
-│   ├── harbor/                       # Story 3.1 & 4.3: Hardened Harbor registry manifests
-│   ├── istio-core/                   # Story 4.4: Istio CRDs, STRICT mTLS, Ingress Gateway
-│   ├── keycloak/                     # Story 4.6: Keycloak SSO and PostgreSQL manifests
-│   ├── kyverno/                      # Story 5.1: Kyverno admission controller & policy pack
-│   ├── monitoring/                   # Story 5.3 & 5.5: LGTM stack and cATO executive dashboard
-│   ├── neuvector/                    # Story 5.2: NeuVector Active Cyber Defense DaemonSet
-│   ├── smoke-tests/                  # Story 6.2: Automated pre-flight & post-upgrade smoke test Jobs
-│   ├── vault/                        # Story 4.5: HashiCorp Vault with AWS KMS auto-unseal
-│   ├── vector/                       # Story 5.4: Vector OCSF telemetry shipper DaemonSet
-│   └── velero/                       # Story 6.4: Velero backup & DR with S3/KMS and EBS snapshots
-└── scripts/                          # Operational automation and lifecycle CLIs
+│   ├── aws-load-balancer-controller/ # AWS Load Balancer Controller and internal NLB manifests
+│   ├── cato-oscal-exporter/          # Automated OSCAL compliance exporter CronJob
+│   ├── external-secrets/             # External Secrets Operator and AWS Secrets Manager stores
+│   ├── flux-system/                  # Flux v2 GitOps controllers and OCI reconciliation
+│   ├── harbor/                       # In-cluster Harbor registry with S3 backend
+│   ├── istio-core/                   # Istio CRDs, STRICT mTLS PeerAuthentication, and Ingress
+│   ├── keycloak/                     # Keycloak DoD SSO and database configuration
+│   ├── kyverno/                      # Kyverno admission controller, NIST policy pack, and event streamer
+│   ├── monitoring/                   # LGTM stack (Loki S3, Prometheus M-21-31, Tempo, Grafana cATO dashboard)
+│   ├── neuvector/                    # NeuVector Active Cyber Defense DaemonSet (Protect mode)
+│   ├── smoke-tests/                  # Automated pre-flight and post-upgrade smoke test Jobs
+│   ├── vault/                        # HashiCorp Vault with Raft storage and AWS KMS auto-unseal
+│   ├── vector/                       # Vector OCSF telemetry shipper DaemonSet
+│   └── velero/                       # Velero backup & DR with S3/KMS and EBS snapshotting
+└── scripts/                          # Turnkey deployment scripts and lifecycle CLIs
 ```
 
 ---
 
-## 🛠 Automation Scripts Inventory
+## 🛠 Operational Scripts Reference
 
-| Script | Purpose & Story |
+The `scripts/` directory houses deployment automation and verification tools:
+
+| Script | Purpose & Function |
 | :--- | :--- |
-| [`seed-ecr-bootstrap.sh`](scripts/seed-ecr-bootstrap.sh) | **Story 3.1**: Pre-seeds Day-0 container images (Flux, CoreDNS, VPC CNI, Harbor) into private ECR repos before cluster launch. |
-| [`deploy-aws-load-balancer-controller.sh`](scripts/deploy-aws-load-balancer-controller.sh) | **Story 3.2**: Provisions AWS Load Balancer Controller with IRSA for internal NLBs. |
-| [`deploy-external-secrets.sh`](scripts/deploy-external-secrets.sh) | **Story 2.4**: Deploys ESO and wires `ClusterSecretStore` to AWS Secrets Manager via IRSA. |
-| [`deploy-flux-bootstrap.sh`](scripts/deploy-flux-bootstrap.sh) | **Story 2.5**: Bootstraps air-gapped Flux v2 GitOps engine pulling from internal registries. |
-| [`deploy-hardened-harbor.sh`](scripts/deploy-hardened-harbor.sh) | **Story 4.3**: Deploys Harbor with S3/KMS backend, Keycloak OIDC, and Kyverno Cosign admission rules. |
-| [`deploy-istio-zero-trust.sh`](scripts/deploy-istio-zero-trust.sh) | **Story 4.4**: Deploys Istio service mesh in STRICT mTLS mode with egress lockdown. |
-| [`deploy-vault-kms-raft.sh`](scripts/deploy-vault-kms-raft.sh) | **Story 4.5**: Provisions HashiCorp Vault cluster with Integrated Raft storage and AWS KMS auto-unsealing. |
-| [`deploy-keycloak-sso.sh`](scripts/deploy-keycloak-sso.sh) | **Story 4.6**: Configures Keycloak DoD PKI/CAC authentication and OIDC realms. |
-| [`deploy-kyverno-policy-pack.sh`](scripts/deploy-kyverno-policy-pack.sh) | **Story 5.1**: Deploys Kyverno admission controller and NIST SP 800-53 Rev 5 policy pack. |
-| [`deploy-neuvector-acd.sh`](scripts/deploy-neuvector-acd.sh) | **Story 5.2**: Deploys NeuVector DaemonSet in Protect mode with real-time process quarantine. |
-| [`deploy-oscal-exporter.sh`](scripts/deploy-oscal-exporter.sh) | **Story 5.6**: Deploys scheduled OSCAL exporter CronJob generating machine-readable SSPs for eMASS. |
-| [`deploy-velero-dr.sh`](scripts/deploy-velero-dr.sh) | **Story 6.4**: Provisions Velero backup controller with AWS plugin, private S3 bucket, and daily snapshot schedules. |
-| [`run-smoke-tests.sh`](scripts/run-smoke-tests.sh) | **Story 6.2**: Runs pre-flight and post-upgrade smoke tests validating mTLS, ingress, secrets, storage, and DR. |
-| [`ironbank-cve-triage.py`](scripts/ironbank-cve-triage.py) | **Story 6.3**: Zero-dependency Python CLI scanning tenant workloads, tracking MTTR against DoD 14-day SLA, and applying tag patches. |
-| [`dr-restore-drill.sh`](scripts/dr-restore-drill.sh) | **Story 6.5**: Executes automated cross-region DR restoration drills, rehydrating RDS and Velero snapshots, and producing CP-9/CP-10 audit logs. |
+| [`meshdefense-env.sh`](scripts/meshdefense-env.sh) | Enclave discovery helper dynamically resolving AWS Account ID, Region, Partition, and Cluster metadata. |
+| [`seed-ecr-bootstrap.sh`](scripts/seed-ecr-bootstrap.sh) | Pre-seeds bootstrap images (Flux, CoreDNS, VPC CNI, Harbor) into private ECR repositories. |
+| [`deploy-aws-load-balancer-controller.sh`](scripts/deploy-aws-load-balancer-controller.sh) | Deploys AWS Load Balancer Controller with IRSA for internal private NLB provisioning. |
+| [`deploy-external-secrets.sh`](scripts/deploy-external-secrets.sh) | Installs External Secrets Operator and binds `ClusterSecretStore` to AWS Secrets Manager. |
+| [`deploy-flux-bootstrap.sh`](scripts/deploy-flux-bootstrap.sh) | Bootstraps Flux v2 controllers pulling from private OCI image and chart repositories. |
+| [`deploy-hardened-harbor.sh`](scripts/deploy-hardened-harbor.sh) | Deploys Harbor with S3/KMS storage, Keycloak OIDC, and Kyverno Cosign verification gates. |
+| [`deploy-istio-zero-trust.sh`](scripts/deploy-istio-zero-trust.sh) | Enforces Istio service mesh in STRICT mTLS mode with egress lockdown. |
+| [`deploy-vault-kms-raft.sh`](scripts/deploy-vault-kms-raft.sh) | Provisions HashiCorp Vault with Integrated Raft storage and AWS KMS auto-unseal. |
+| [`deploy-keycloak-sso.sh`](scripts/deploy-keycloak-sso.sh) | Configures Keycloak DoD PKI/CAC authentication, realm imports, and external RDS persistence. |
+| [`deploy-kyverno-policy-pack.sh`](scripts/deploy-kyverno-policy-pack.sh) | Deploys Kyverno admission controller with the NIST SP 800-53 Rev 5 policy pack. |
+| [`deploy-neuvector-acd.sh`](scripts/deploy-neuvector-acd.sh) | Deploys NeuVector DaemonSet in `Protect` mode with behavioral eBPF network filtering. |
+| [`deploy-oscal-exporter.sh`](scripts/deploy-oscal-exporter.sh) | Installs scheduled OSCAL exporter generating machine-readable compliance artifacts for eMASS. |
+| [`deploy-velero-dr.sh`](scripts/deploy-velero-dr.sh) | Configures Velero backup engine with IRSA, encrypted S3 buckets, and daily EBS snapshots. |
+| [`run-smoke-tests.sh`](scripts/run-smoke-tests.sh) | Ephemeral integration test Job validating mTLS, ingress routing, secret decryption, and storage mounts. |
+| [`ironbank-cve-triage.py`](scripts/ironbank-cve-triage.py) | Scans tenant workloads for vulnerabilities, tracks MTTR against the DoD 14-day SLA, and applies tag patches. |
+| [`dr-restore-drill.sh`](scripts/dr-restore-drill.sh) | Executes automated cross-region DR restoration drills, rehydrating RDS and Velero snapshots. |
 
 ---
 
-## 🚀 Environment Deployment Quickstart
+## 🚀 How to Use & Deploy
 
-### 1. Configure Target Environment
-Select the desired environment (`poc-cloud-minimal`, `dev`, `test`, `stg`, or `prod`):
+### Step 1: Initialize Cloud Enclave Infrastructure
 ```bash
+# Navigate to the chosen environment directory (e.g., poc-cloud-minimal or dev)
 cd meshdefense-clusters/environments/poc-cloud-minimal
-```
 
-### 2. Initialize and Apply Terraform
-```bash
+# Initialize Terraform providers
 terraform init
+
+# Review and execute infrastructure provisioning
 terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
-### 3. Verify Enclave Infrastructure Outputs
-Verify that all 6 KMS CMKs, private VPC endpoints, and IRSA role ARNs are exported:
+### Step 2: Connect to EKS Cluster
 ```bash
-terraform output all_kms_key_arns
-terraform output irsa_role_arns
+aws eks update-kubeconfig \
+  --region $(terraform output -raw region 2>/dev/null || echo "us-east-1") \
+  --name $(terraform output -raw eks_cluster_name)
+```
+
+### Step 3: Deploy Platform Components
+Execute the deployment scripts in sequence:
+```bash
+# Core Controllers & Secrets
+bash meshdefense-clusters/scripts/deploy-external-secrets.sh
+bash meshdefense-clusters/scripts/deploy-vault-kms-raft.sh
+
+# Zero-Trust Mesh & Identity
+bash meshdefense-clusters/scripts/deploy-istio-zero-trust.sh
+bash meshdefense-clusters/scripts/deploy-keycloak-sso.sh
+
+# Security & Compliance Gates
+bash meshdefense-clusters/scripts/deploy-kyverno-policy-pack.sh
+bash meshdefense-clusters/scripts/deploy-neuvector-acd.sh
+bash meshdefense-clusters/scripts/deploy-velero-dr.sh
+```
+
+### Step 4: Validate Enclave Health
+```bash
+# Run automated pre-flight smoke tests
+bash meshdefense-clusters/scripts/run-smoke-tests.sh pre-flight
 ```
