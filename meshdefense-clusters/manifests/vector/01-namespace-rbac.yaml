@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+  labels:
+    app.kubernetes.io/name: logging
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vector
+  namespace: logging
+  labels:
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/part-of: logging
+  annotations:
+    # AWS IRSA Logging Role for S3 GovCloud persistence & CloudWatch logging
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vector
+  labels:
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/part-of: logging
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - nodes
+      - events
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["audit.k8s.io"]
+    resources:
+      - events
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vector
+  labels:
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/part-of: logging
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vector
+subjects:
+  - kind: ServiceAccount
+    name: vector
+    namespace: logging
+---
+# ==============================================================================
+# Zero-Trust Network Policies for Logging Namespace (NIST 800-53 SC-7)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: logging-default-deny
+  namespace: logging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: logging-allow-intra-namespace
+  namespace: logging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: logging-allow-dns-and-cloud
+  namespace: logging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # CoreDNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow egress to AWS endpoints (S3 VPC Gateway, KMS/STS VPC Endpoints, IMDSv2)
+    - to:
+        - ipBlock:
+            cidr: 10.104.0.0/16
+        - ipBlock:
+            cidr: 169.254.169.254/32
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+    # Allow egress to Loki & SIEM / Monitoring services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3100
+        - protocol: TCP
+          port: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: logging-allow-telemetry-inputs
+  namespace: logging
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vector
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow NeuVector & Kyverno webhook alerts and syslog
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 514
+        - protocol: TCP
+          port: 514
+        - protocol: TCP
+          port: 8088
+        - protocol: TCP
+          port: 9000

@@ -1,0 +1,57 @@
+# ==============================================================================
+# MeshDefense Vector Telemetry Shipper Values for Big Bang (Story 5.4)
+# Normalization into OCSF v1.1.0 with NIST SP 800-53 Control Enrichment
+# ==============================================================================
+
+role: "DaemonSet"
+
+image:
+  repository: "timberio/vector"
+  tag: "0.38.0-distroless-libc"
+  pullPolicy: "IfNotPresent"
+
+serviceAccount:
+  create: true
+  name: "vector"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+
+securityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  privileged: false
+
+tolerations:
+  - operator: Exists
+    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+sinks:
+  loki:
+    enabled: true
+    endpoint: "http://loki.monitoring.svc.cluster.local:3100"
+    format: "ocsf"
+
+enrichment:
+  nist80053:
+    enabled: true
+    framework: "NIST-SP-800-53-Rev5"
+    controls:
+      istio: "SC-7"
+      vault: "SC-12"
+      keycloak: "IA-2"
+      kyverno: "AC-3,CM-7"
+      neuvector: "SI-4"
+      default: "AU-2"
+  ocsf:
+    version: "1.1.0"
+    category: "Security Finding / Infrastructure Activity"

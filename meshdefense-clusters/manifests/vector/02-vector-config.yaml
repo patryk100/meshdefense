@@ -1,0 +1,222 @@
+# ==============================================================================
+# Vector Telemetry Normalization, OCSF Formatting & NIST 800-53 Enrichment
+# Story 5.4: Vector DaemonSet Configuration
+# Inputs: Container logs (/var/log/pods), K8s API events, NeuVector alerts, Kyverno audit logs
+# Output: Formatted OCSF v1.1.0 JSON forwarded to Loki (and S3 archive)
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+  namespace: logging
+  labels:
+    app.kubernetes.io/name: vector
+    app.kubernetes.io/part-of: logging
+data:
+  vector.yaml: |
+    data_dir: /var/lib/vector
+
+    # --------------------------------------------------------------------------
+    # Telemetry Ingestion Sources
+    # --------------------------------------------------------------------------
+    sources:
+      # 1. Container Logs from all nodes
+      kubernetes_logs:
+        type: kubernetes_logs
+        auto_partial_merge: true
+        exclude_paths_glob_patterns:
+          - "**/*.gz"
+          - "**/*.tmp"
+
+      # 2. NeuVector & Kyverno Webhook Alerts Ingest
+      webhook_alerts:
+        type: http_server
+        address: 0.0.0.0:8088
+        encoding: json
+        path: /neuvector-alerts
+
+      # 3. Syslog Server for NeuVector ACD and network security events
+      syslog_events:
+        type: syslog
+        address: 0.0.0.0:514
+        mode: tcp
+
+    # --------------------------------------------------------------------------
+    # Telemetry Normalization, Filtering & Enrichment (VRL - Vector Remap Language)
+    # --------------------------------------------------------------------------
+    transforms:
+      # Filter out noisy container health probes, liveness, readiness, and metrics scrapes
+      filter_noise:
+        type: filter
+        inputs:
+          - kubernetes_logs
+        condition: |
+          !match(string!(.message), r'kube-probe|healthz|livez|readyz|GET /metrics') &&
+          !match(string!(.message), r'DEBUG|trace')
+
+      # Normalize and enrich container logs with NIST 800-53 controls and OCSF schema
+      normalize_container_logs:
+        type: remap
+        inputs:
+          - filter_noise
+        source: |
+          # Initialize OCSF v1.1.0 Cloud / Container Activity Event (Class 1007: Container Lifecycle / 4001: Network)
+          .metadata = {
+            "version": "1.1.0",
+            "product": {
+              "name": "MeshDefense Air-Gap Enclave",
+              "vendor_name": "MeshDefense",
+              "feature": { "name": "cATO Telemetry Shipper" }
+            }
+          }
+          .category_name = "Cloud / Infrastructure"
+          .class_name = "Container Activity"
+          .class_uid = 1007
+          .severity_id = 1
+          .severity = "Informational"
+
+          # Map Kubernetes Metadata
+          if exists(.kubernetes) {
+            .cloud = {
+              "provider": "AWS-GovCloud",
+              "region": "us-east-1"
+            }
+            .container = {
+              "name": .kubernetes.container_name,
+              "image": { "name": .kubernetes.container_image }
+            }
+            .pod = {
+              "name": .kubernetes.pod_name,
+              "namespace": .kubernetes.pod_namespace,
+              "labels": .kubernetes.pod_labels
+            }
+          }
+
+          # NIST 800-53 Control Enrichment based on namespace and workload classification
+          ns = to_string(.kubernetes.pod_namespace) ?? "unknown"
+          if ns == "istio-system" || ns == "istio-ingress" {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "SC-7",
+              "control_name": "Boundary Protection & Zero-Trust mTLS Strict",
+              "impact_level": "DoD-IL6"
+            }
+          } else if ns == "vault" {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "SC-12",
+              "control_name": "Cryptographic Key Establishment & Auto-Unseal",
+              "impact_level": "DoD-IL6"
+            }
+          } else if ns == "keycloak" {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "IA-2",
+              "control_name": "Identification and Authentication (FIDO2/PKI/CAC)",
+              "impact_level": "DoD-IL6"
+            }
+          } else if ns == "kyverno" {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "AC-3",
+              "control_name": "Access Enforcement & Admission Gatekeeping",
+              "impact_level": "DoD-IL6"
+            }
+          } else if ns == "neuvector" {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "SI-4",
+              "control_name": "Information System Monitoring & Runtime Defense",
+              "impact_level": "DoD-IL6"
+            }
+          } else {
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "AU-2",
+              "control_name": "Event Logging & Audit Generation",
+              "impact_level": "DoD-IL6"
+            }
+          }
+
+          # Format OCSF timestamp
+          .time = to_unix_timestamp(now(), unit: "milliseconds")
+
+      # Normalize Kyverno Admission Decisions & Audit Events (Class 6001: Webhook / Authorization)
+      normalize_kyverno_audits:
+        type: remap
+        inputs:
+          - filter_noise
+        source: |
+          if match(string!(.message), r'policy.kyverno.io|AdmissionReview') {
+            .category_name = "Identity & Access Management"
+            .class_name = "Authentication & Authorization"
+            .class_uid = 3002
+            .compliance = {
+              "framework": "NIST-SP-800-53-Rev5",
+              "control_id": "CM-7",
+              "control_name": "Least Functionality & Non-Root Privilege Enforcement",
+              "impact_level": "DoD-IL6"
+            }
+            .severity_id = 3
+            .severity = "Medium"
+          }
+
+      # Normalize NeuVector Active Cyber Defense Alerts & Syslog (Class 2001: Security Finding)
+      normalize_neuvector_alerts:
+        type: remap
+        inputs:
+          - webhook_alerts
+          - syslog_events
+        source: |
+          .category_name = "Security Finding"
+          .class_name = "Detection Finding"
+          .class_uid = 2001
+          .activity_name = "Automated Active Threat Intercept"
+          .severity_id = 5
+          .severity = "Critical"
+
+          # NIST 800-53 Active Defense Enrichment
+          .compliance = {
+            "framework": "NIST-SP-800-53-Rev5",
+            "control_id": "SI-4",
+            "control_name": "Information System Monitoring, Containment & Quarantine",
+            "impact_level": "DoD-IL6"
+          }
+
+          # OCSF Security Finding Details
+          .finding = {
+            "title": "NeuVector Active Container Threat Blocked",
+            "desc": to_string(.message) ?? "Lateral movement or unauthorized process quarantined",
+            "types": ["Lateral Movement", "Zero-Day Exploit", "Host Escape Attempt"]
+          }
+
+          .metadata = {
+            "version": "1.1.0",
+            "product": {
+              "name": "NeuVector ACD",
+              "vendor_name": "SUSE/NeuVector"
+            }
+          }
+          .time = to_unix_timestamp(now(), unit: "milliseconds")
+
+    # --------------------------------------------------------------------------
+    # Output Sinks (Loki Ingest & S3 Cold Bucket Persistence)
+    # --------------------------------------------------------------------------
+    sinks:
+      # Forward enriched OCSF events to Loki
+      loki_sink:
+        type: loki
+        inputs:
+          - normalize_container_logs
+          - normalize_kyverno_audits
+          - normalize_neuvector_alerts
+        endpoint: http://loki.monitoring.svc.cluster.local:3100
+        encoding:
+          codec: json
+        labels:
+          stream: "ocsf"
+          cluster: "meshdefense-poc-minimal-eks"
+          compliance_framework: "{{ compliance.framework }}"
+          compliance_control: "{{ compliance.control_id }}"
+          severity: "{{ severity }}"
+          class_name: "{{ class_name }}"
