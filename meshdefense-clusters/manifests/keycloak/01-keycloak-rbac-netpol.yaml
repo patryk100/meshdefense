@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak
+  labels:
+    istio-injection: enabled
+    meshdefense.io/tier: identity-core
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keycloak
+  namespace: keycloak
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: keycloak
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: keycloak-isolation-policy
+  namespace: keycloak
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic on port 8080 from Istio Ingress Gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow intra-mesh OIDC token exchange from all application namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              meshdefense.io/tenant: "true"
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: harbor
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: neuvector
+      ports:
+        - protocol: TCP
+          port: 8080
+    # JGroups cluster discovery between Keycloak pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 7800
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow PostgreSQL outbound to external RDS on 5432
+    - to:
+        - ipBlock:
+            cidr: 10.104.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+    # JGroups cluster discovery
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 7800

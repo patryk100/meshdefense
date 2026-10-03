@@ -1,0 +1,80 @@
+# ==============================================================================
+# MeshDefense: Keycloak Production Helm Values for Air-Gapped Big Bang
+# Features:
+#   - External RDS PostgreSQL Persistence (NIST 800-53 SC-28, CP-9)
+#   - Istio Edge Ingress Termination & STRICT mTLS (NIST 800-53 SC-8)
+#   - Realm Import for Harbor, Grafana, GitLab, NeuVector (NIST 800-53 IA-2, IA-5)
+#   - Multi-Replica HA Deployment
+# ==============================================================================
+
+image:
+  repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/keycloak"
+  tag: "25.0.1"
+
+replicas: 2
+
+serviceAccount:
+  create: false
+  name: "keycloak"
+
+auth:
+  adminUser: "admin"
+  existingSecret: "keycloak-db-secret"
+
+# ------------------------------------------------------------------------------
+# 1. External Multi-AZ RDS PostgreSQL Storage Engine (Story 1.5)
+# ------------------------------------------------------------------------------
+database:
+  vendor: "postgres"
+  hostname: "postgres.il6.meshdefense.internal"
+  port: 5432
+  database: "keycloak"
+  username: "keycloak_user"
+  existingSecret: "keycloak-db-secret"
+  existingSecretPasswordKey: "KC_DB_PASSWORD"
+
+# ------------------------------------------------------------------------------
+# 2. Hardened Production Environment & Proxy Settings
+# ------------------------------------------------------------------------------
+extraEnvVars:
+  - name: "KC_HTTP_ENABLED"
+    value: "true"
+  - name: "KC_PROXY"
+    value: "edge"
+  - name: "KC_HOSTNAME_STRICT"
+    value: "false"
+  - name: "KC_HEALTH_ENABLED"
+    value: "true"
+  - name: "KC_METRICS_ENABLED"
+    value: "true"
+
+# ------------------------------------------------------------------------------
+# 3. Realm Auto-Import on Startup
+# ------------------------------------------------------------------------------
+extraVolumes:
+  - name: realm-config
+    configMap:
+      name: keycloak-realm-bigbang
+
+extraVolumeMounts:
+  - name: realm-config
+    mountPath: "/opt/keycloak/data/import"
+    readOnly: true
+
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start"
+  - "--optimized"
+  - "--import-realm"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2000m"
+    memory: "2Gi"
+
+service:
+  type: ClusterIP
+  httpPort: 8080

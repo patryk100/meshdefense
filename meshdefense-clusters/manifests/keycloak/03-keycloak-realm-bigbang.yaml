@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-bigbang
+  namespace: keycloak
+data:
+  baby-yoda-realm.json: |
+    {
+      "id": "baby-yoda",
+      "realm": "baby-yoda",
+      "displayName": "MeshDefense DoD IL6 Enclave",
+      "enabled": true,
+      "sslRequired": "external",
+      "registrationAllowed": false,
+      "loginWithEmailAllowed": true,
+      "duplicateEmailsAllowed": false,
+      "resetPasswordAllowed": false,
+      "editUsernameAllowed": false,
+      "bruteForceProtected": true,
+      "failureFactor": 3,
+      "maxDeltaTimeSeconds": 900,
+      "roles": {
+        "realm": [
+          {"name": "platform-administrators", "description": "Full platform administration across all Big Bang tooling"},
+          {"name": "platform-operators", "description": "Read and operation access to telemetry and pipelines"},
+          {"name": "security-auditors", "description": "Audit and compliance oversight role"}
+        ]
+      },
+      "groups": [
+        {
+          "name": "platform-administrators",
+          "path": "/platform-administrators",
+          "realmRoles": ["platform-administrators"]
+        },
+        {
+          "name": "security-auditors",
+          "path": "/security-auditors",
+          "realmRoles": ["security-auditors"]
+        }
+      ],
+      "clients": [
+        {
+          "clientId": "harbor-sso",
+          "name": "Harbor OCI Registry",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "clientAuthenticatorType": "client-secret",
+          "secret": "MeshDefenseKeycloakHarborSecret2026!",
+          "redirectUris": [
+            "https://harbor.apps.*.meshdefense.internal/*",
+            "https://harbor.127.0.0.1.nip.io:8443/*",
+            "https://harbor.apps.poc-minimal.il6.meshdefense.internal/c/oidc/callback"
+          ],
+          "webOrigins": ["+"],
+          "standardFlowEnabled": true,
+          "directAccessGrantsEnabled": false
+        },
+        {
+          "clientId": "grafana-sso",
+          "name": "Grafana Observability Dashboard",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "clientAuthenticatorType": "client-secret",
+          "secret": "MeshDefenseKeycloakGrafanaSecret2026!",
+          "redirectUris": [
+            "https://grafana.apps.*.meshdefense.internal/login/generic_oauth",
+            "https://monitoring.apps.*.meshdefense.internal/login/generic_oauth"
+          ],
+          "webOrigins": ["+"],
+          "standardFlowEnabled": true
+        },
+        {
+          "clientId": "gitlab-sso",
+          "name": "GitLab DevSecOps Suite",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "clientAuthenticatorType": "client-secret",
+          "secret": "MeshDefenseKeycloakGitLabSecret2026!",
+          "redirectUris": [
+            "https://gitlab.apps.*.meshdefense.internal/users/auth/openid_connect/callback"
+          ],
+          "webOrigins": ["+"],
+          "standardFlowEnabled": true
+        },
+        {
+          "clientId": "neuvector-sso",
+          "name": "NeuVector Container Runtime Defense",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "clientAuthenticatorType": "client-secret",
+          "secret": "MeshDefenseKeycloakNeuVectorSecret2026!",
+          "redirectUris": [
+            "https://neuvector.apps.*.meshdefense.internal/openId_auth"
+          ],
+          "webOrigins": ["+"],
+          "standardFlowEnabled": true
+        }
+      ]
+    }
