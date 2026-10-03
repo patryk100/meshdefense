@@ -1,0 +1,56 @@
+# ==============================================================================
+# MeshDefense NeuVector Active Cyber Defense Declarative Policies (Story 5.2)
+# Configures:
+#   1. Protect Mode enforcement on all tenant and platform workloads (NIST SI-4)
+#   2. Process Quarantine incident response automation on privilege escalation / breakout
+#   3. Automated lateral movement blocking and network rule discovery baseline
+# ==============================================================================
+
+apiVersion: neuvector.com/v1
+kind: NvClusterSecurityRule
+metadata:
+  name: acd-protect-mode-baseline
+spec:
+  target:
+    policymode: "Protect"
+    selector:
+      name: "all-workloads"
+      comment: "Enforce Active Cyber Defense across all non-system namespaces"
+      criteria:
+        - key: "domain"
+          op: "!="
+          value: "kube-system"
+  egress:
+    - name: "allow-dns"
+      action: "allow"
+      applications:
+        - "DNS"
+      ports: "53"
+      selector:
+        name: "nodes"
+    - name: "allow-https"
+      action: "allow"
+      applications:
+        - "SSL"
+      ports: "443"
+      selector:
+        name: "nodes"
+  process:
+    - name: "deny-unauthorized-shells"
+      path: "/bin/sh"
+      action: "deny"
+    - name: "deny-bash"
+      path: "/bin/bash"
+      action: "deny"
+  response:
+    - policy_name: "default"
+      event: "security-event"
+      actions:
+        - "quarantine"
+        - "webhook"
+      comment: "Automatically isolate compromised container on security event or lateral probe"
+    - policy_name: "default"
+      event: "event"
+      actions:
+        - "webhook"
+      comment: "Stream real-time unauthorized network connection attempts to SIEM"

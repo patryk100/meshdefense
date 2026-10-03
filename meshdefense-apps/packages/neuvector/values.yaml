@@ -1,28 +1,77 @@
 # ==============================================================================
-# NeuVector Zero-Trust Container Defense Values for Big Bang
+# NeuVector Active Cyber Defense (ACD) Values for Big Bang (Story 5.2)
+# Complies with NIST 800-53 SI-4 (Information System Monitoring)
+# Enforces real-time lateral movement blocking, process quarantine, and syslog/webhook
 # ==============================================================================
 
-registry: "registry.il6.meshdefense.internal"
+registry: "123456789012.dkr.ecr.us-east-1.amazonaws.com"
 
-imagePullSecrets:
-  - name: "harbor-registry-secret"
+# Global Active Cyber Defense defaults
+global:
+  cattle:
+    url: ""
+  mode: "Protect" # Enforces active blocking of unauthorized processes & network connections
 
 manager:
   image:
     repository: "ironbank/neuvector/manager"
-    tag: "5.3.0"
+    tag: "5.3.2"
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 controller:
   image:
     repository: "ironbank/neuvector/controller"
-    tag: "5.3.0"
-  replicas: 3
+    tag: "5.3.2"
+  replicas: 1
+  rwholesite: false
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  # Automated Active Cyber Defense baseline configuration
+  defaultPolicyMode: "Protect" # Advance to Protect mode for active cyber defense
+  unusedGroupAging: 24
 
 enforcer:
   image:
     repository: "ironbank/neuvector/enforcer"
-    tag: "5.3.0"
+    tag: "5.3.2"
+  driver:
+    mode: "ebpf" # Kernel-level eBPF packet filter and behavioral telemetry
+  resources:
+    requests:
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 800m
+      memory: 1Gi
+
+# Alerting & Syslog / Webhook Integration for SIEM / Vector
+catoAlerting:
+  syslog:
+    enabled: true
+    server: "10.104.0.10"
+    port: 514
+    protocol: "UDP"
+    level: "Notice"
+  webhook:
+    enabled: true
+    url: "http://vector.monitoring.svc.cluster.local:8088/neuvector-alerts"
+  quarantine:
+    autoQuarantine: true
+    action: "Quarantine"
+    incidentLevel: "Critical"
 
 cve:
   updater:
-    enabled: false # Disabled in airgap; updated via update-vuln-db.sh script
+    enabled: false # Air-gapped; updated via offline DB bundle (update-vuln-db.sh)

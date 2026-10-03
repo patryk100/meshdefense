@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 01-crds.yaml
+  - 02-neuvector-rbac-netpol.yaml
+  - 03-neuvector-core.yaml
+  - 04-neuvector-acd-policies.yaml
