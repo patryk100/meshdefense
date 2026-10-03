@@ -1,0 +1,90 @@
+# ==============================================================================
+# MeshDefense: HashiCorp Vault Helm Values for Air-Gapped Big Bang
+# Features:
+#   - High Availability (HA) Raft Integrated Storage Engine
+#   - AWS KMS Auto-Unseal over private VPC Endpoint via IRSA (NIST 800-53 SC-12, SC-13)
+#   - Zero-Trust mTLS & Restricted Pod Security Standard (NIST 800-53 AC-3, SC-8)
+#   - Disconnected Private ECR Image References
+# ==============================================================================
+
+global:
+  enabled: true
+  tlsDisable: false
+
+injector:
+  enabled: true
+  image:
+    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/vault-k8s"
+    tag: "1.4.1"
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "250m"
+
+server:
+  image:
+    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/meshdefense-poc-minimal-harbor/vault"
+    tag: "1.16.2"
+
+  serviceAccount:
+    create: false
+    name: "vault" # Binds to IRSA ServiceAccount with eks.amazonaws.com/role-arn
+
+  ha:
+    enabled: true
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |
+        ui = true
+
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+
+        storage "raft" {
+          path = "/vault/data"
+        }
+
+        service_registration "kubernetes" {}
+
+        # ----------------------------------------------------------------------
+        # AWS KMS Auto-Unseal Configuration (NIST 800-53 SC-12, SC-13)
+        # Uses AWS STS AssumeRoleWithWebIdentity credentials injected by IRSA
+        # Communicates directly with AWS KMS via the private VPC endpoint
+        # ----------------------------------------------------------------------
+        seal "awskms" {
+          region     = "us-east-1"
+          kms_key_id = "arn:aws:kms:us-east-1:123456789012:alias/meshdefense-poc-minimal-secrets"
+          endpoint   = "https://vpce-03618bf5d70b4b209-4hwwa27w.kms.us-east-1.vpce.amazonaws.com"
+        }
+
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: "gp3"
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  auditStorage:
+    enabled: true
+    size: 5Gi
+    storageClass: "gp3"
+    accessMode: ReadWriteOnce
+
+ui:
+  enabled: true
+  serviceType: "ClusterIP"

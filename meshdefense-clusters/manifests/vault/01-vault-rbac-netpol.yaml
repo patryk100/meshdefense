@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    istio-injection: enabled
+    meshdefense.io/tier: security-core
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: vault
+  annotations:
+    # IRSA role allowing Vault to call KMS Encrypt/Decrypt/DescribeKey via VPC Endpoint
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-vault"
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: vault
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vault-isolation-policy
+  namespace: vault
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow intra-vault cluster consensus on Raft port 8201
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8201
+    # Allow API traffic on port 8200 from Istio Ingress Gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8200
+    # Allow API traffic from External Secrets Operator
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: external-secrets
+      ports:
+        - protocol: TCP
+          port: 8200
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow intra-vault Raft consensus
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8201
+    # Allow KMS VPC Interface Endpoint on port 443
+    - to:
+        - ipBlock:
+            cidr: 10.104.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
