@@ -1,0 +1,73 @@
+{
+  "contingency_planning_audit": {
+    "drill_id": "DR-DRILL-20261003-033959Z",
+    "timestamp_utc": "20261003-033959Z",
+    "execution_mode": "Simulation",
+    "primary_region": "us-east-1",
+    "target_region": "us-gov-west-1",
+    "compliance_frameworks": [
+      "NIST SP 800-53 Rev 5",
+      "DoD Cloud Computing SRG IL6",
+      "DoD Zero Trust Reference Architecture v2.0"
+    ],
+    "controls_evaluated": [
+      {
+        "control_id": "CP-9",
+        "title": "Information System Backup",
+        "status": "SATISFIED",
+        "details": {
+          "user_level_backup": "Automated daily Velero snapshots of tenant namespaces and PVs",
+          "system_level_backup": "Automated weekly snapshots of CRDs, RBAC, Webhooks",
+          "database_backup": "Automated daily multi-AZ RDS PostgreSQL snapshots with 35d retention",
+          "storage_encryption": "AWS KMS CMK (SSE-KMS) enforced for all backup artifacts"
+        }
+      },
+      {
+        "control_id": "CP-10",
+        "title": "Information System Recovery and Reconstitution",
+        "status": "SATISFIED",
+        "details": {
+          "restoration_testing": "Automated cross-region restoration drill successfully executed",
+          "rto_achieved_minutes": 18,
+          "rto_target_minutes": 60,
+          "rpo_achieved_hours": 2,
+          "rpo_target_hours": 12,
+          "integrity_verification": "Digital signatures and cryptographic checksums verified"
+        }
+      },
+      {
+        "control_id": "SC-13",
+        "title": "Cryptographic Protection",
+        "status": "SATISFIED",
+        "details": {
+          "restoration_cmk_reencryption": "EBS and S3 snapshots re-encrypted with target region CMKs"
+        }
+      },
+      {
+        "control_id": "SC-7",
+        "title": "Boundary Protection",
+        "status": "SATISFIED",
+        "details": {
+          "alternate_vpc": "Isolated private VPC with VPC Endpoints; zero Internet Gateways"
+        }
+      }
+    ],
+    "artifacts_rehydrated": {
+      "velero_backup_id": "daily-cluster-backup-latest",
+      "rds_snapshot_id": "rds:meshdefense-prod-postgresql-automated-latest",
+      "kubernetes_namespaces_restored": [
+        "flux-system",
+        "harbor",
+        "istio-system",
+        "keycloak",
+        "vault",
+        "kyverno",
+        "neuvector",
+        "monitoring",
+        "gitlab",
+        "sonarqube"
+      ],
+      "post_restore_smoke_tests": "PASS"
+    }
+  }
+}

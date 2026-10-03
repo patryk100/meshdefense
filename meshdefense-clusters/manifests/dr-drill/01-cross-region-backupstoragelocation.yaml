@@ -1,0 +1,35 @@
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: dr-cross-region-replica
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+    disaster-recovery.meshdefense.io/role: replica-target
+spec:
+  provider: aws
+  objectStorage:
+    # Target replica bucket in alternate GovCloud / secondary region (e.g., us-gov-west-1 or us-east-2)
+    bucket: meshdefense-dr-replica-velero-backups
+    prefix: backups
+  config:
+    region: us-gov-west-1
+    serverSideEncryption: aws:kms
+    # Target region KMS CMK Key ID for cross-region re-encryption
+    kmsKeyId: alias/meshdefense-dr-s3-key
+  accessMode: ReadOnly
+---
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: dr-cross-region-ebs
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+    disaster-recovery.meshdefense.io/role: replica-target
+spec:
+  provider: aws
+  config:
+    region: us-gov-west-1

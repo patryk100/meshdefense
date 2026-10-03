@@ -1,0 +1,23 @@
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: dr-drill-cluster-restore
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/part-of: meshdefense-backup-dr
+    disaster-recovery.meshdefense.io/role: restore-trigger
+spec:
+  # References the latest validated backup from either primary or cross-region replica BSL
+  backupName: LATEST_VALIDATED_BACKUP
+  includedNamespaces:
+    - "*"
+  excludedNamespaces:
+    - kube-system
+    - kube-node-lease
+    - kube-public
+    - velero
+  restorePVs: true
+  preserveNodePorts: true
+  existingResourcePolicy: update
+  hooks: {}
