@@ -1,0 +1,49 @@
+# ==============================================================================
+# MeshDefense Automated OSCAL Exporter Big Bang Package Values (Story 5.6)
+# Standardized Open Security Controls Assessment Language (NIST SP 800-53 Rev 5)
+# ==============================================================================
+
+schedule: "0 * * * *"
+
+image:
+  repository: "ironbank/opensource/kubernetes/kubectl"
+  tag: "v1.30.0"
+  pullPolicy: "IfNotPresent"
+
+serviceAccount:
+  create: true
+  name: "oscal-exporter"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/meshdefense-poc-minimal-eks-irsa-logging"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+securityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  runAsNonRoot: true
+  fsGroup: 10001
+
+export:
+  format: "json"
+  version: "1.1.0"
+  framework: "NIST-SP-800-53-Rev5"
+  controls:
+    - "AC-3"
+    - "CM-7"
+    - "SI-4"
+    - "SI-7"
+    - "SC-7"
+    - "SC-12"
+    - "IA-2"
+    - "AU-2"
+  destinations:
+    inClusterConfigMap: true
+    configMapName: "oscal-latest-assessment-results"
+    s3Bucket: "meshdefense-poc-minimal-loki-logs-ju9q2f"

@@ -189,7 +189,8 @@ module "airgap_seed_registry" {
     "ironbank/opensource/prometheus/prometheus",
     "ironbank/grafana/tempo",
     "ironbank/grafana/grafana/grafana",
-    "timberio/vector"
+    "timberio/vector",
+    "ironbank/opensource/kubernetes/kubectl"
   ]
 
   tags = {

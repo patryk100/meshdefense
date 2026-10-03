@@ -1,0 +1,114 @@
+# ==============================================================================
+# OSCAL Exporter CronJob & Scheduled Pipeline (Story 5.6)
+# Runs hourly to evaluate platform compliance and produce OSCAL Assessment Results
+# ==============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: oscal-exporter
+  namespace: cato
+  labels:
+    app.kubernetes.io/name: oscal-exporter
+    app.kubernetes.io/part-of: cato
+spec:
+  schedule: "0 * * * *" # Runs every hour at minute 0
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: oscal-exporter
+            app.kubernetes.io/part-of: cato
+        spec:
+          serviceAccountName: oscal-exporter
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+          containers:
+            - name: oscal-exporter
+              image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - /scripts/generate-oscal.sh
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+              volumeMounts:
+                - name: script
+                  mountPath: /scripts
+          volumes:
+            - name: script
+              configMap:
+                name: oscal-generator-script
+                defaultMode: 0755
+---
+# One-time immediate Job to generate baseline OSCAL artifacts upon deployment
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oscal-exporter-bootstrap
+  namespace: cato
+  labels:
+    app.kubernetes.io/name: oscal-exporter
+    app.kubernetes.io/part-of: cato
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oscal-exporter
+        app.kubernetes.io/part-of: cato
+    spec:
+      serviceAccountName: oscal-exporter
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: oscal-exporter
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/ironbank/opensource/kubernetes/kubectl:v1.30.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - /scripts/generate-oscal.sh
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: oscal-generator-script
+            defaultMode: 0755
