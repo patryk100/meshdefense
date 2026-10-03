@@ -2,7 +2,6 @@
 """
 MeshDefense Artifact Harvester & OCI Air-Gap Sync Pipeline
 ===========================================================
-STORY 4.1: Artifact Harvester & OCI Air-Gap Sync Pipeline
 DoD Impact Level 6 (IL6) & NIST 800-53 (SC-8, SC-12, SC-13, SI-7) Compliant.
 
 Capabilities:

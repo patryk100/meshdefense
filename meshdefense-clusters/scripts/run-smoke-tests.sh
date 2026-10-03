@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MeshDefense Automated Pre-Flight & Post-Upgrade Test Suite Runner (Story 6.2)
+# MeshDefense Automated Pre-Flight & Post-Upgrade Test Suite Runner
 # ==============================================================================
 set -euo pipefail
 

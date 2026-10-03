@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MeshDefense: Air-Gapped Cross-Region Replication & Restoration Drill (Story 6.5)
+# MeshDefense: Air-Gapped Cross-Region Replication & Restoration Drill
 # Validates Automated Disaster Recovery Rehydration for NIST SP 800-53 CP-9 & CP-10
 # ==============================================================================
 set -euo pipefail

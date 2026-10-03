@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script: deploy-istio-zero-trust.sh
-# Purpose: Deploy Istio CRDs, Gateway, VirtualServices & STRICT mTLS (Story 3.5)
+# Purpose: Deploy Istio CRDs, Gateway, VirtualServices & STRICT mTLS
 # ==============================================================================
 set -euo pipefail
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "===================================================================="
-echo "[*] Story 3.5: Deploying Zero-Trust Istio Gateways, VS & mTLS"
+echo "[*] Deploying Zero-Trust Istio Gateways, VirtualServices & STRICT mTLS"
 echo "===================================================================="
 
 export KUBECONFIG="${KUBECONFIG:-/root/.kube/config}"

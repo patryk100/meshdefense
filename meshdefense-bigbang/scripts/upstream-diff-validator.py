@@ -2,7 +2,6 @@
 """
 MeshDefense Upstream Release Diff & Breaking Change Validation Utility
 ========================================================================
-STORY 6.1: Upstream Release Diff & Breaking Change Validation Utility
 DoD Impact Level 6 (IL6) & NIST 800-53 (CM-2, CM-3, SI-2) Compliant.
 
 Capabilities:
@@ -259,7 +258,7 @@ def print_diff_report(diff: Dict[str, Any]):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="MeshDefense Big Bang Upstream Release Diff & Breaking Change Validation Utility (Story 6.1)"
+        description="MeshDefense Big Bang Upstream Release Diff & Breaking Change Validation Utility"
     )
     parser.add_argument(
         "--current",

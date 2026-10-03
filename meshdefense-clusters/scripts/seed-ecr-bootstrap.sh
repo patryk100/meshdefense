@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script: seed-ecr-bootstrap.sh
-# Purpose: Story 3.1 - Seed ECR Registry & Day-0 Air-Gap Bootstrap Pipeline
+# Purpose: Seed ECR Registry & Day-0 Air-Gap Bootstrap Pipeline
 #
 # Copies minimal bootstrap container images (Cert-Manager, Harbor Operator,
 # CoreDNS, kube-proxy, AWS VPC CNI, External Secrets Operator, Flux v2) from
@@ -85,7 +85,7 @@ declare -a BOOTSTRAP_IMAGES=(
   "ghcr.io/fluxcd/image-automation-controller:v0.39.0|fluxcd/image-automation-controller:v0.39.0"
   "ghcr.io/fluxcd/image-reflector-controller:v0.33.0|fluxcd/image-reflector-controller:v0.33.0"
 
-  # ── AWS Load Balancer Controller (Story 3.2) ─────────────────────────────
+  # ── AWS Load Balancer Controller ─────────────────────────────────────────
   "${EKS_ECR_REGISTRY}/amazon/aws-load-balancer-controller:v2.8.2|amazon/aws-load-balancer-controller:v2.8.2"
 )
 

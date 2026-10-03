@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-MeshDefense Automated Tenant Onboarding GitOps Factory (Story 4.8)
-==================================================================
+MeshDefense Automated Tenant Onboarding GitOps Factory
+=======================================================
 Reads a single declarative developer custom YAML specification (defining app name,
 service account, namespace, resource quotas, and egress rules) and automatically generates:
   1. Hardened Tenant Namespace (with Restricted Pod Security Standard & Istio injection labels)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MeshDefense: Deploy Velero Backup & Disaster Recovery Automation (Story 6.4)
+# MeshDefense: Deploy Velero Backup & Disaster Recovery Automation
 # Enforces AWS Plugin, IRSA Authentication, S3/KMS Encryption, and EBS Snapshots
 # ==============================================================================
 set -euo pipefail

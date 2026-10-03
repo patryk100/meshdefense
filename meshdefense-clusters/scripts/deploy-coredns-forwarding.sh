@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script: deploy-coredns-forwarding.sh
-# Purpose: Configure CoreDNS in-cluster forwarding for Route 53 PHZ (Story 3.3)
+# Purpose: Configure CoreDNS in-cluster forwarding for Route 53 PHZ
 # ==============================================================================
 set -euo pipefail
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "===================================================================="
-echo "[*] Story 3.3: Configuring CoreDNS Forwarding for Private Hosted Zone"
+echo "[*] Configuring CoreDNS Forwarding for Private Hosted Zone"
 echo "===================================================================="
 
 export KUBECONFIG="${KUBECONFIG:-/root/.kube/config}"

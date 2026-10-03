@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MeshDefense Story 3.2: AWS Load Balancer Controller & Internal NLB Provisioner
+# MeshDefense: AWS Load Balancer Controller & Internal NLB Provisioner
 # ==============================================================================
 set -euo pipefail
 
@@ -22,7 +22,7 @@ fi
 export VPC_ID
 
 echo "===================================================================="
-echo "[*] Story 3.2: Deploying AWS Load Balancer Controller & Internal NLB"
+echo "[*] Deploying AWS Load Balancer Controller & Internal NLB"
 echo "    AWS Account: ${AWS_ACCOUNT_ID} | Region: ${AWS_REGION} | VPC: ${VPC_ID}"
 echo "===================================================================="
 

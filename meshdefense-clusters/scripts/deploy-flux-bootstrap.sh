@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ==============================================================================
 # Script: deploy-flux-bootstrap.sh
-# Purpose: Declarative Flux v2 Bootstrap & In-Cluster OCI Secret Provider (Story 2.5)
+# Purpose: Declarative Flux v2 Bootstrap & In-Cluster OCI Secret Provider
 #          Wires Flux v2 to private ECR via IRSA and External Secrets Operator
 #          for zero-plaintext GitOps secret resolution in an air-gapped enclave.
 # ==============================================================================

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-MeshDefense Tenant Customization Engine (Story 4.2)
-===================================================
+MeshDefense Tenant Customization Engine
+=======================================
 Generates hierarchical Kustomize overlays (Base -> Environment -> Tenant)
 from a single tenant-values.yaml specification.
 

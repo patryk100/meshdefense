@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MeshDefense Automated OSCAL Exporter Deployment & Trigger Script (Story 5.6)
+# MeshDefense Automated OSCAL Exporter Deployment & Trigger Script
 # ==============================================================================
 set -euo pipefail
 

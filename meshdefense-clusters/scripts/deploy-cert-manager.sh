@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script: deploy-cert-manager.sh
-# Purpose: Deploy Cert-Manager and configure Air-Gapped PKI / ClusterIssuer (Story 3.4)
+# Purpose: Deploy Cert-Manager and configure Air-Gapped PKI / ClusterIssuer
 # ==============================================================================
 set -euo pipefail
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "===================================================================="
-echo "[*] Story 3.4: Deploying Cert-Manager & Air-Gapped PKI Integration"
+echo "[*] Deploying Cert-Manager & Air-Gapped PKI Integration"
 echo "===================================================================="
 
 export KUBECONFIG="${KUBECONFIG:-/root/.kube/config}"
